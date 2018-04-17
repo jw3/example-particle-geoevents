@@ -20,3 +20,5 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-testkit" % "10.1.1" % Test
   )
 }
+
+enablePlugins(JavaServerAppPackaging, DockerPlugin)
