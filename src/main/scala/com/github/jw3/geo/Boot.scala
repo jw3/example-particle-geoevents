@@ -1,4 +1,4 @@
-package com.github.jw3
+package com.github.jw3.geo
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
