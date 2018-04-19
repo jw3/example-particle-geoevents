@@ -8,6 +8,7 @@ libraryDependencies ++= {
   Seq(
     // misc
     "com.iheart" %% "ficus" % "1.4.3",
+    "org.locationtech.geotrellis" %% "geotrellis-vector" % "12.0.0",
     // akka
     "com.typesafe.akka" %% "akka-actor" % "2.5.12",
     "com.typesafe.akka" %% "akka-stream" % "2.5.12",
