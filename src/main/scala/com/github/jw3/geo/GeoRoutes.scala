@@ -5,10 +5,10 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import com.github.jw3.geo.Api.HookCall
 import geotrellis.vector.Point
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
 trait GeoRoutes {
   import akka.http.scaladsl.server.Directives._
-  import Api.Formats._
 
   def routes(fencing: ActorRef): Route =
     extractLog { logger ⇒
