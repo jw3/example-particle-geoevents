@@ -1,21 +1,31 @@
 package com.github.jw3.geo
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import julienrf.json
+import geotrellis.vector.Point
+import julienrf.json.derived
 import play.api.libs.json.Format
 import spray.json.{DefaultJsonProtocol, JsValue, RootJsonFormat}
 
 object Api {
-  sealed trait HookEvent {
-    def id: String
+  sealed trait UserEvent
+  final case class FenceAdded() extends UserEvent
+
+  sealed trait DeviceEvent {
+    def device: String
+  }
+  object DeviceEvent {
+    implicit val format: Format[DeviceEvent] = derived.oformat()
+  }
+
+  final case class Moved(device: String, pos: Point) extends DeviceEvent
+  object Moved {
+    implicit val format: Format[Moved] = derived.oformat()
   }
 
   final case class HookCall(name: String, data: String, coreid: String, published_at: String)
   object HookCall {
-    implicit val reads: Format[HookCall] = json.derived.oformat()
+    implicit val format: Format[HookCall] = derived.oformat()
   }
-
-  final case class Moved(id: String, source: String, lat: String, lon: String) extends HookEvent
 
   object Formats extends DefaultJsonProtocol with SprayJsonSupport {
     implicit def p2sFormat[T](implicit playFormat: Format[T]): RootJsonFormat[T] = new RootJsonFormat[T] {

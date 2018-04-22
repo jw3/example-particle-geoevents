@@ -32,7 +32,7 @@ trait GeoRoutes {
     pathPrefix("api") {
       path("move") {
         post {
-          entity(as[HookCall]) { e =>
+          entity(as[HookCall]) { e ⇒
             import geotrellis.vector.io.json.Implicits._
 
             // e.data = "34.12345:-79.09876"
