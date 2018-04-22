@@ -25,3 +25,23 @@ https://github.com/jw3/geotrellis/tree/2.12.5
 - Geometric operations: Convex Hull, Densification, Simplification
 - Perform Kriging interpolation on point values.
 - Perform affine transformations of geometries
+
+
+#### particle webhook format
+
+```
+{
+  "event":"mv",
+  "data":"34.12345:-79.09876",
+  "published_at":"2018-04-22T04:14:43.044Z",
+  "coreid":"api",
+  "userid":"1234567890",
+  "fw_version":0,
+  "public":false
+}
+```
+
+#### event names
+- `up` device online
+- `dn` device offline
+- `mv` device moved

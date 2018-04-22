@@ -18,7 +18,7 @@ object Api {
     implicit val format: RootJsonFormat[Moved] = jsonFormat2(Moved.apply)
   }
 
-  final case class HookCall(name: String, data: String, coreid: String, published_at: String)
+  final case class HookCall(event: String, data: String, coreid: String, published_at: String)
   object HookCall extends SprayJsonSupport with DefaultJsonProtocol {
     implicit val format: RootJsonFormat[HookCall] = jsonFormat4(HookCall.apply)
   }
