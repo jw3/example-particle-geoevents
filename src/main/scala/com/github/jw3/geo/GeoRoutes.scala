@@ -11,28 +11,31 @@ trait GeoRoutes {
   import Api.Formats._
 
   def routes(fencing: ActorRef): Route =
-    pathPrefix("api") {
-      path("move") {
-        post {
-          entity(as[HookCall]) { e ⇒
-            import geotrellis.vector.io.json.Implicits._
-
-            // e.data = "34.12345:-79.09876"
-            val xy = e.data.split(":")
-            val pt = Point(xy(0).toDouble, xy(1).toDouble)
-            complete(pt)
-          }
-        }
-      } ~
-        path("fence") {
+    extractLog { logger ⇒
+      pathPrefix("api") {
+        path("move") {
           post {
-            complete(StatusCodes.OK)
+            entity(as[HookCall]) { e ⇒
+              import geotrellis.vector.io.json.Implicits._
+              logger.info(s"move [${e.coreid}] [${e.data}]")
+
+              // e.data = "34.12345:-79.09876"
+              val xy = e.data.split(":")
+              val pt = Point(xy(0).toDouble, xy(1).toDouble)
+              complete(pt)
+            }
           }
         } ~
-        path("health") {
-          get {
-            complete(StatusCodes.OK)
+          path("fence") {
+            post {
+              complete(StatusCodes.OK)
+            }
+          } ~
+          path("health") {
+            get {
+              complete(StatusCodes.OK)
+            }
           }
-        }
+      }
     }
 }
