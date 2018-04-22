@@ -6,6 +6,7 @@ import akka.http.scaladsl.server.Route
 import com.github.jw3.geo.Api.HookCall
 import geotrellis.vector.Point
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.stream.scaladsl.Sink
 
 trait GeoRoutes {
   import akka.http.scaladsl.server.Directives._
@@ -15,27 +16,35 @@ trait GeoRoutes {
       pathPrefix("api") {
         path("move") {
           post {
-            entity(as[HookCall]) { e ⇒
-              import geotrellis.vector.io.json.Implicits._
-              logger.info(s"move [${e.coreid}] [${e.data}]")
+            extractExecutionContext { implicit ec ⇒
+              extractMaterializer { implicit mat ⇒
+                extractDataBytes { d ⇒
+                  d.map(_.utf8String).runWith(Sink.head).foreach(s ⇒ logger.info(s))
 
-              // e.data = "34.12345:-79.09876"
-              val xy = e.data.split(":")
-              val pt = Point(xy(0).toDouble, xy(1).toDouble)
-              complete(pt)
+                  entity(as[HookCall]) { e ⇒
+                    import geotrellis.vector.io.json.Implicits._
+                    logger.info(s"move [${e.coreid}] [${e.data}]")
+
+                    // e.data = "34.12345:-79.09876"
+                    val xy = e.data.split(":")
+                    val pt = Point(xy(0).toDouble, xy(1).toDouble)
+                    complete(pt)
+                  }
+                }
+              } ~
+                path("fence") {
+                  post {
+                    complete(StatusCodes.OK)
+                  }
+                } ~
+                path("health") {
+                  get {
+                    complete(StatusCodes.OK)
+                  }
+                }
             }
           }
-        } ~
-          path("fence") {
-            post {
-              complete(StatusCodes.OK)
-            }
-          } ~
-          path("health") {
-            get {
-              complete(StatusCodes.OK)
-            }
-          }
+        }
       }
     }
 }
