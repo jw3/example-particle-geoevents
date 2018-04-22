@@ -14,12 +14,12 @@ object Api {
   }
 
   final case class Moved(device: String, pos: Point) extends DeviceEvent
-  object Moved extends SprayJsonSupport with DefaultJsonProtocol {
+  object Moved extends DefaultJsonProtocol with SprayJsonSupport {
     implicit val format: RootJsonFormat[Moved] = jsonFormat2(Moved.apply)
   }
 
   final case class HookCall(event: String, data: String, coreid: String, published_at: String)
-  object HookCall extends SprayJsonSupport with DefaultJsonProtocol {
+  object HookCall extends DefaultJsonProtocol with SprayJsonSupport {
     implicit val format: RootJsonFormat[HookCall] = jsonFormat4(HookCall.apply)
   }
 }
