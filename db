@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+readonly pwdir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+readonly dbdir="${DBDIR:-${pwdir}/db.d}"
+readonly pgver="${PGVER:-10-alpine}"
+
+start() {
+  docker run "$@" -p 5432:5432 -v ${dbdir}:/docker-entrypoint-initdb.d mdillon/postgis:${pgver}
+}
+
+restart() {
+  docker start -i "$1"
+}
+
+"$@"
