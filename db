@@ -2,10 +2,11 @@
 
 readonly pwdir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 readonly dbdir="${DBDIR:-${pwdir}/db.d}"
-readonly pgver="${PGVER:-10-alpine}"
+readonly image="${IMAGE:-jwiii/openshift-postgis}"
+readonly pgver="${PGVER:-latest}"
 
 start() {
-  docker run "$@" -p 5432:5432 -v ${dbdir}:/docker-entrypoint-initdb.d mdillon/postgis:${pgver}
+  docker run "$@" -p 5432:5432 -v ${dbdir}:/docker-entrypoint-initdb.d ${image}:${pgver}
 }
 
 restart() {
