@@ -18,7 +18,6 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http" % "10.1.1",
     "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.1",
     // logging
-    "org.slf4j" % "slf4j-nop" % "1.6.4",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     // slick
