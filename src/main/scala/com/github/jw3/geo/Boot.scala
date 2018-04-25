@@ -31,8 +31,9 @@ object Boot extends App with GeoRoutes with GeoDatabase with LazyLogging {
   val iface = "0.0.0.0"
   val port = config.as[Int]("geo.http.port")
 
+  val devices = system.actorOf(DeviceManager.props(), "devices")
   val fencing = system.actorOf(Fencer.props(), "fencing")
 
   logger.info(s"starting http on $iface:$port")
-  Http().bindAndHandle(routes(fencing), iface, port)
+  Http().bindAndHandle(routes(devices, fencing), iface, port)
 }
