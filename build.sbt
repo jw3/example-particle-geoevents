@@ -20,9 +20,10 @@ libraryDependencies ++= {
     // logging
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
-    // slick
+    // persistence
     "com.typesafe.slick" %% "slick" % "3.1.0",
     "org.postgresql" % "postgresql" % "42.2.2",
+    "com.github.dnvriend" %% "akka-persistence-jdbc" % "3.3.0",
     // testing
     "com.typesafe.akka" %% "akka-testkit" % "2.5.12" % Test,
     "com.typesafe.akka" %% "akka-http-testkit" % "10.1.1" % Test
