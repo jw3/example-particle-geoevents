@@ -1,25 +1,28 @@
 package com.github.jw3.geo
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import geotrellis.vector.Point
-import spray.json.{DefaultJsonProtocol, RootJsonFormat}
+import geotrellis.vector.{Point, Polygon}
 import geotrellis.vector.io.json.Implicits._
+import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
 object Api {
-  sealed trait UserEvent
-  final case class FenceAdded() extends UserEvent
+  sealed trait Command
+  sealed trait Event
 
-  sealed trait DeviceEvent {
+  sealed trait DeviceEvent extends Event {
     def device: String
   }
 
-  final case class Moved(device: String, pos: Point) extends DeviceEvent
-  object Moved extends DefaultJsonProtocol with SprayJsonSupport {
-    implicit val format: RootJsonFormat[Moved] = jsonFormat2(Moved.apply)
+  object Events extends DefaultJsonProtocol {
+    case class PositionUpdate(device: String, pos: Point) extends DeviceEvent
+    object PositionUpdate {
+      implicit val format: RootJsonFormat[PositionUpdate] = jsonFormat2(PositionUpdate.apply)
+    }
+
+    case class FencingCreated(name: String, geom: Polygon)
   }
 
-  final case class HookCall(event: String, data: String, coreid: String, published_at: String)
-  object HookCall extends DefaultJsonProtocol with SprayJsonSupport {
-    implicit val format: RootJsonFormat[HookCall] = jsonFormat4(HookCall.apply)
+  object Commands extends DefaultJsonProtocol {
+    case class MoveDevice(device: String, geom: Point) extends Command
+    case class AddFencing(name: String, geom: Polygon) extends Command
   }
 }

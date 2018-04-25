@@ -1,12 +1,20 @@
 package com.github.jw3.geo
 
 import akka.actor.ActorRef
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
-import com.github.jw3.geo.Api.HookCall
-import geotrellis.vector.Point
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.stream.scaladsl.Sink
+import com.github.jw3.geo.GeoRoutes.HookCall
+import geotrellis.vector.Point
+import spray.json.{DefaultJsonProtocol, RootJsonFormat}
+
+object GeoRoutes {
+  final case class HookCall(event: String, data: String, coreid: String, published_at: String)
+  object HookCall extends DefaultJsonProtocol {
+    implicit val format: RootJsonFormat[HookCall] = jsonFormat4(HookCall.apply)
+  }
+}
 
 trait GeoRoutes {
   import akka.http.scaladsl.server.Directives._
@@ -16,35 +24,27 @@ trait GeoRoutes {
       pathPrefix("api") {
         path("move") {
           post {
-            extractExecutionContext { implicit ec ⇒
-              extractMaterializer { implicit mat ⇒
-                extractDataBytes { d ⇒
-                  d.map(_.utf8String).runWith(Sink.head).foreach(s ⇒ logger.info(s))
+            entity(as[HookCall]) { e ⇒
+              import geotrellis.vector.io.json.Implicits._
+              logger.info(s"move [${e.coreid}] [${e.data}]")
 
-                  entity(as[HookCall]) { e ⇒
-                    import geotrellis.vector.io.json.Implicits._
-                    logger.info(s"move [${e.coreid}] [${e.data}]")
-
-                    // e.data = "34.12345:-79.09876"
-                    val xy = e.data.split(":")
-                    val pt = Point(xy(0).toDouble, xy(1).toDouble)
-                    complete(pt)
-                  }
-                }
-              } ~
-                path("fence") {
-                  post {
-                    complete(StatusCodes.OK)
-                  }
-                } ~
-                path("health") {
-                  get {
-                    complete(StatusCodes.OK)
-                  }
-                }
+              // e.data = "34.12345:-79.09876"
+              val xy = e.data.split(":")
+              val pt = Point(xy(0).toDouble, xy(1).toDouble)
+              complete(pt)
             }
           }
-        }
+        } ~
+          path("fence") {
+            post {
+              complete(StatusCodes.OK)
+            }
+          } ~
+          path("health") {
+            get {
+              complete(StatusCodes.OK)
+            }
+          }
       }
     }
 }
