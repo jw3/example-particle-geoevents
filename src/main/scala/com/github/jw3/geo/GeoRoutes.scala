@@ -27,27 +27,27 @@ trait GeoRoutes {
     extractLog { logger ⇒
       extractExecutionContext { implicit ec ⇒
         pathPrefix("api") {
-          path("move") {
+          path("device" / Segment) { id ⇒
             post {
-              entity(as[HookCall]) { e ⇒
-                logger.info(s"move [${e.coreid}] [${e.data}]")
-
-                // e.data = "34.12345:-79.09876"
-                val xy = e.data.split(":")
-                val pt = Point(xy(0).toDouble, xy(1).toDouble)
-
-                devices ! Commands.MoveDevice("id", pt)
-                complete(StatusCodes.OK)
+              val res = (devices ? AddDevice(id)).map {
+                case DeviceAdded(_) ⇒ StatusCodes.OK
+                case _ ⇒ StatusCodes.InternalServerError
               }
+              complete(res)
             }
           } ~
-            path("device" / Segment) { id ⇒
+            path("device" / Segment / "move") { id ⇒
               post {
-                val res = (devices ? AddDevice(id)).map {
-                  case DeviceAdded(_) ⇒ StatusCodes.OK
-                  case _ ⇒ StatusCodes.InternalServerError
+                entity(as[HookCall]) { e ⇒
+                  logger.info(s"move {} [{}]", id, e.data)
+
+                  // e.data = "34.12345:-79.09876"
+                  val xy = e.data.split(":")
+                  val pt = Point(xy(0).toDouble, xy(1).toDouble)
+
+                  devices ! Commands.MoveDevice("id", pt)
+                  complete(StatusCodes.OK)
                 }
-                complete(res)
               }
             } ~
             path("fence") {
