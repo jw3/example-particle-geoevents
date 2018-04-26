@@ -18,15 +18,19 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http" % "10.1.1",
     "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.1",
     // logging
-    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
+    "com.typesafe.akka" %% "akka-slf4j" % "2.5.12",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     // persistence
     "com.typesafe.slick" %% "slick" % "3.1.0",
     "org.postgresql" % "postgresql" % "42.2.2",
     "com.github.dnvriend" %% "akka-persistence-jdbc" % "3.3.0",
-    // testing
+    "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.5.1.1",
+    // test
     "com.typesafe.akka" %% "akka-testkit" % "2.5.12" % Test,
-    "com.typesafe.akka" %% "akka-http-testkit" % "10.1.1" % Test
+    "com.typesafe.akka" %% "akka-http-testkit" % "10.1.1" % Test,
+    "org.scalactic" %% "scalactic" % "3.0.5" % Test,
+    "org.scalatest" %% "scalatest" % "3.0.5" % Test
   )
 }
 
