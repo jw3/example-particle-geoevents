@@ -2,10 +2,10 @@
 
 CREATE DATABASE events
   WITH OWNER = postgres
-       ENCODING = 'UTF8'
+       ENCODING = 'SQL_ASCII'
        TABLESPACE = pg_default
-       LC_COLLATE = 'en_US.utf8'
-       LC_CTYPE = 'en_US.utf8'
+       LC_COLLATE = 'C'
+       LC_CTYPE = 'C'
        CONNECTION LIMIT = -1;
 
 \connect events;

@@ -1,5 +1,3 @@
-\connect events;
-
 CREATE TABLE positions (
   id SERIAL PRIMARY KEY,
   device VARCHAR(128),

@@ -9,6 +9,15 @@ readonly password="${PASS:-pass}"
 readonly port=5432
 
 start() {
+  echo "-- combined sql scripts" > "$pwdir/target/setup.sql"
+  echo "" >> "$pwdir/target/setup.sql"
+  for f in $(ls db.d/*.sql); do
+    echo "-- ############## ${f} ##############" >> "$pwdir/target/setup.sql"
+    cat "$f" >> "$pwdir/target/setup.sql"
+    echo "" >> "$pwdir/target/setup.sql"
+  done
+  chmod 777 "$pwdir/target/setup.sql"
+
   docker run "$@" \
     -p "$port:$port" \
     -e PG_MODE=primary \
@@ -19,7 +28,7 @@ start() {
     -e PG_USER=postgres \
     -e PG_PASSWORD=postgres \
     -e PG_PRIMARY_PORT="$port" \
-    -v ${dbdir}:/docker-entrypoint-initdb.d \
+    -v "$pwdir/target/setup.sql":/pgconf/setup.sql \
     ${image}
 }
 
