@@ -3,11 +3,13 @@ package com.github.jw3.geo
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
+import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 import net.ceedubs.ficus.Ficus._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
 
 object Boot extends App with BootUtils with GeoRoutes with GeoDatabase with LazyLogging {
   val config = pickConfig()
@@ -17,6 +19,7 @@ object Boot extends App with BootUtils with GeoRoutes with GeoDatabase with Lazy
 
   implicit val system: ActorSystem = ActorSystem("geoserver", config)
   implicit val mat: ActorMaterializer = ActorMaterializer()
+  implicit val timeout: Timeout = 10 seconds;
 
   //
   // connect readside

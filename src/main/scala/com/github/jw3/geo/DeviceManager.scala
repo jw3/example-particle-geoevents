@@ -2,7 +2,7 @@ package com.github.jw3.geo
 
 import akka.actor.{ActorContext, ActorLogging, ActorRef, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted, SnapshotOffer}
-import com.github.jw3.geo.Api.{Commands, Events}
+import com.github.jw3.geo.Api.{Commands, Events, Responses}
 
 object DeviceManager {
   def props() = Props(new DeviceManager)
@@ -40,9 +40,13 @@ class DeviceManager extends PersistentActor with ActorLogging {
     //
     case Commands.AddDevice(id) ⇒
       val replyto = sender()
-      persist(Events.DeviceAdded(id)) { e ⇒
-        self ! e
-        replyto ! e
+      context.child(id) match {
+        case Some(_) ⇒ replyto ! Responses.DeviceExists(id)
+        case None ⇒
+          persist(Events.DeviceAdded(id)) { e ⇒
+            self ! e
+            replyto ! e
+          }
       }
 
     //

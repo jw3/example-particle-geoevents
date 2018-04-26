@@ -17,10 +17,10 @@ class Device(id: String) extends PersistentActor with ActorLogging {
 
   def receiveRecover: Receive = {
     case RecoveryCompleted ⇒
-      log.info(s"device {} restored", id)
+      log.info(s"device {} created", id)
 
     case SnapshotOffer(_, ss: Device.Snapshot) ⇒
-      log.info("restoring device {} to {}", id, ss.position)
+      log.info("snap device {} to {}", id, ss.position)
       position = Some(ss.position)
 
     case Events.PositionUpdate(_, pos) ⇒

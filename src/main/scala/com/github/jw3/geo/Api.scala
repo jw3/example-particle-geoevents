@@ -28,6 +28,7 @@ object Api {
   }
 
   object Responses extends DefaultJsonProtocol {
+    case class DeviceExists(id: String) extends Response[Commands.AddDevice]
     case class UnknownDevicePosition(id: String) extends Response[Commands.GetDevicePosition]
     case class DevicePosition(id: String, geom: Point) extends Response[Commands.GetDevicePosition]
   }
