@@ -1,13 +1,14 @@
 package com.github.jw3.geo
 
-import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, Props}
-import akka.persistence.PersistentActor
+import akka.actor.{ActorContext, ActorLogging, ActorRef, Props}
+import akka.persistence.{PersistentActor, RecoveryCompleted, SnapshotOffer}
 import com.github.jw3.geo.Api.{Commands, Events}
-import geotrellis.vector.Geometry
 
 object DeviceManager {
   def props() = Props(new DeviceManager)
   def device(id: String)(implicit ctx: ActorContext): Option[ActorRef] = ctx.child(id)
+
+  case class Snapshot(devices: Set[String])
 
   sealed trait DeviceStatus
   object DeviceStatusUnknown extends DeviceStatus
@@ -18,17 +19,25 @@ object DeviceManager {
 }
 
 class DeviceManager extends PersistentActor with ActorLogging {
-  def persistenceId: String = "device-manager"
+  val persistenceId: String = "device-manager"
 
   def receiveRecover: Receive = {
-    case _ ⇒
+    case RecoveryCompleted ⇒
+      log.info(s"device manager restored via persistence")
+
+    case SnapshotOffer(_, ss: DeviceManager.Snapshot) ⇒
+      log.info("restoring {} devices", ss.devices.size)
+      ss.devices.foreach(self ! Events.DeviceAdded(_))
+
+    case Events.DeviceAdded(id) ⇒
+      log.debug(s"added event for $id")
+      self ! Events.DeviceAdded(id)
   }
 
   def receiveCommand: Receive = {
     //
     // commands
     //
-
     case Commands.AddDevice(id) ⇒
       val replyto = sender()
       persist(Events.DeviceAdded(id)) { e ⇒
@@ -36,23 +45,12 @@ class DeviceManager extends PersistentActor with ActorLogging {
         replyto ! e
       }
 
-    case Commands.MoveDevice(id, g) ⇒
-      val replyto = sender()
-      persist(Events.PositionUpdate(id, g)) { e ⇒
-        DeviceManager.device(id).foreach(_ ! e)
-        replyto ! e
-      }
-
     //
     // events
     //
-
     case Events.DeviceAdded(id) ⇒
-      val ref = context.actorOf(Device.props(), id)
+      val ref = context.actorOf(Device.props(id), id)
       log.debug("created device [{}]", ref.path.name)
-
-    case e @ Events.PositionUpdate(id, _) ⇒
-      DeviceManager.device(id).foreach(_ ! e)
 
     //
     // queries
@@ -62,18 +60,11 @@ class DeviceManager extends PersistentActor with ActorLogging {
         case None ⇒ sender ! DeviceManager.DeviceStatusUnknown
         case Some(_) ⇒ sender ! DeviceManager.DeviceOnline
       }
+
+    //
+    // routing requests
+    //
+    case c @ Commands.MoveDevice(id, _) ⇒
+      context.child(id).foreach(_ forward c)
   }
-}
-
-object Device {
-  def props() = Props(new DeviceManager)
-}
-
-class Device extends Actor with ActorLogging {
-  def positioned(pos: Option[Geometry]): Receive = {
-    case Events.PositionUpdate(_, g) ⇒
-      context.become(positioned(Some(g)))
-  }
-
-  def receive: Receive = positioned(None)
 }
