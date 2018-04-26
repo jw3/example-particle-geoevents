@@ -19,6 +19,16 @@ object Boot extends App with BootUtils with GeoRoutes with GeoDatabase with Lazy
   implicit val mat: ActorMaterializer = ActorMaterializer()
 
   //
+  // connect readside
+
+  initdb() match {
+    case Some(db) ⇒
+      system.actorOf(Journaler.props(db), "journal")
+    case None ⇒
+      logger.error("failed to connect readside db")
+  }
+
+  //
   // start top level components
 
   val devices = system.actorOf(DeviceManager.props(), "devices")
