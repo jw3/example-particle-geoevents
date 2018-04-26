@@ -3,9 +3,9 @@
 readonly pwdir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 readonly dbdir="${DBDIR:-${pwdir}/db.d}"
 readonly image="${IMAGE:-crunchydata/crunchy-postgres-gis:centos7-10.3-1.8.2}"
-readonly dbname="${DB:-events}"
-readonly username="${USER:-user}"
-readonly password="${PASS:-pass}"
+readonly dbname="${DB:-postgres}"
+readonly username="${USER:-postgres}"
+readonly password="${PASS:-postgres}"
 readonly port=5432
 
 start() {
