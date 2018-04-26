@@ -8,12 +8,10 @@ object Api {
   sealed trait Command
   sealed trait Event
 
-  sealed trait DeviceEvent extends Event {
-    def device: String
-  }
-
   object Events extends DefaultJsonProtocol {
-    case class PositionUpdate(device: String, pos: Point) extends DeviceEvent
+    case class DeviceAdded(id: String) extends Event
+
+    case class PositionUpdate(device: String, pos: Point) extends Event
     object PositionUpdate {
       implicit val format: RootJsonFormat[PositionUpdate] = jsonFormat2(PositionUpdate.apply)
     }
@@ -22,6 +20,7 @@ object Api {
   }
 
   object Commands extends DefaultJsonProtocol {
+    case class AddDevice(id: String) extends Command
     case class MoveDevice(device: String, geom: Point) extends Command
     case class AddFencing(name: String, geom: Polygon) extends Command
   }
