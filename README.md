@@ -1,8 +1,9 @@
-example geoserver for particle devices
+geoevent server for the particle iot platform
 ===
 
+A prototype geoevent and geofencing server that deploys to OpenShift online and is based on Akka, PostGis, and the Particle cloud platform.
 
-### objects
+### concepts
 - Device: a location reporting component
 - Feature: a geographic feature that
 - Fence: a geometry with a callback
@@ -11,6 +12,7 @@ example geoserver for particle devices
 - Features can be fenced, but are not always
 - Fencing is a dynamic operation, Features are persistent
 
+### Development
 
 #### geotrellis-vector (published to 2.12.x)
 
@@ -45,3 +47,12 @@ https://github.com/jw3/geotrellis/tree/2.12.5
 - `up` device online
 - `dn` device offline
 - `mv` device moved
+
+#### configuration
+
+Most settings are exposed in the environment
+
+- `GEO_PERSIST`: enable jdbc connection
+- `GEO_HTTP_PORT`: port to serve http on
+- `ACTOR_LOG_LEVEL`: level to log actors
+
