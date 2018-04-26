@@ -56,7 +56,7 @@ class DeviceManagerPersistenceSpec extends TestKit(ActorSystem()) with WordSpecL
 object DeviceManagerPersistenceSpec {
   case object ChildCount
 
-  def mockService(pid: String)(implicit system: ActorSystem, to: Timeout): ActorRef = {
+  def mockService(pid: String)(implicit system: ActorSystem): ActorRef = {
     system.actorOf(Props(new DeviceManager {
       override def persistenceId: String = pid
 

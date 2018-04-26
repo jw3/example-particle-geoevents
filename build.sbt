@@ -1,8 +1,23 @@
-name := "example-particle-geoserver"
+enablePlugins(GitVersioning, JavaServerAppPackaging, DockerPlugin)
 
-version := "0.1"
+name := "example-particle-geoserver"
 organization := "com.github.jw3"
 scalaVersion := "2.12.5"
+git.useGitDescribe := true
+
+scalacOptions ++= Seq(
+  "-target:jvm-1.8",
+  "-encoding",
+  "UTF-8",
+  "-feature",
+  "-unchecked",
+  "-deprecation",
+  "-language:postfixOps",
+  "-language:implicitConversions",
+  "-Ywarn-unused-import",
+  "-Xfatal-warnings",
+  "-Xlint:_"
+)
 
 resolvers += Resolver.bintrayRepo("jw3", "maven")
 
@@ -33,5 +48,3 @@ libraryDependencies ++= {
     "org.scalatest" %% "scalatest" % "3.0.5" % Test
   )
 }
-
-enablePlugins(JavaServerAppPackaging, DockerPlugin)

@@ -4,9 +4,7 @@ import akka.actor.ActorRef
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
-import akka.stream.scaladsl.Sink
 import com.github.jw3.geo.Api.Commands
-import com.github.jw3.geo.Api.Commands.MoveDevice
 import com.github.jw3.geo.GeoRoutes.HookCall
 import geotrellis.vector.Point
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
@@ -27,7 +25,6 @@ trait GeoRoutes {
         path("move") {
           post {
             entity(as[HookCall]) { e ⇒
-              import geotrellis.vector.io.json.Implicits._
               logger.info(s"move [${e.coreid}] [${e.data}]")
 
               // e.data = "34.12345:-79.09876"
