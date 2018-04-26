@@ -62,7 +62,7 @@ class DeviceManager extends PersistentActor with ActorLogging {
       }
 
     //
-    // routing requests
+    // read-only commands
     //
     case c @ Commands.MoveDevice(id, _) ⇒
       context.child(id).foreach(_ forward c)

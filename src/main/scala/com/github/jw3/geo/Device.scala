@@ -2,8 +2,8 @@ package com.github.jw3.geo
 
 import akka.actor.{ActorLogging, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted, SnapshotOffer}
-import com.github.jw3.geo.Api.{Commands, Events}
-import geotrellis.vector.{Geometry, Point}
+import com.github.jw3.geo.Api.{Commands, Events, Responses}
+import geotrellis.vector.Point
 
 object Device {
   def props(id: String) = Props(new Device(id))
@@ -13,7 +13,7 @@ object Device {
 
 class Device(id: String) extends PersistentActor with ActorLogging {
   val persistenceId: String = id
-  var position: Option[Geometry] = None
+  var position: Option[Point] = None
 
   def receiveRecover: Receive = {
     case RecoveryCompleted ⇒
@@ -21,11 +21,10 @@ class Device(id: String) extends PersistentActor with ActorLogging {
 
     case SnapshotOffer(_, ss: Device.Snapshot) ⇒
       log.info("restoring device {} to {}", id, ss.position)
-      self ! Events.PositionUpdate(id, ss.position)
+      position = Some(ss.position)
 
-    case Events.DeviceAdded(id) ⇒
-      log.debug(s"added event for $id")
-      self ! Events.DeviceAdded(id)
+    case Events.PositionUpdate(_, pos) ⇒
+      position = Some(pos)
   }
 
   def receiveCommand: Receive = {
@@ -33,16 +32,23 @@ class Device(id: String) extends PersistentActor with ActorLogging {
     // commands
     //
     case Commands.MoveDevice(_, g) ⇒
-      val replyto = sender()
       persist(Events.PositionUpdate(id, g)) { e ⇒
         DeviceManager.device(id).foreach(_ ! e)
-        replyto ! e
       }
 
     //
     // events
     //
-    case e @ Events.PositionUpdate(mid, _) if mid == id ⇒
+    case e @ Events.PositionUpdate(_id, _) if _id == id ⇒
       DeviceManager.device(id).foreach(_ ! e)
+
+    //
+    // read-only commands
+    //
+    case Commands.GetDevicePosition(_id) if _id == id ⇒
+      position match {
+        case None ⇒ sender ! Responses.UnknownDevicePosition(id)
+        case Some(p) ⇒ sender ! Responses.DevicePosition(id, p)
+      }
   }
 }

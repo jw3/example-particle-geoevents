@@ -14,7 +14,7 @@ import scala.concurrent.duration.DurationInt
 class DeviceManagerPersistenceSpec extends TestKit(ActorSystem()) with WordSpecLike with Matchers with ImplicitSender {
   implicit val timeout: Timeout = Timeout(5 seconds)
 
-  "persisted devices" should {
+  "device manager" should {
     "restore when empty" in {
       val pid = random()
 
