@@ -11,7 +11,7 @@ import net.ceedubs.ficus.Ficus._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
-object Boot extends App with BootUtils with GeoRoutes with GeoDatabase with LazyLogging {
+object Boot extends App with BootUtils with DeviceRoutes with GeoDatabase with LazyLogging {
   val config = pickConfig()
 
   //

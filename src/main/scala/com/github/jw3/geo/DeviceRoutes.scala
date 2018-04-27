@@ -9,18 +9,18 @@ import akka.util.Timeout
 import com.github.jw3.geo.Api.Commands
 import com.github.jw3.geo.Api.Commands.AddDevice
 import com.github.jw3.geo.Api.Events.DeviceAdded
-import com.github.jw3.geo.GeoRoutes.HookCall
+import com.github.jw3.geo.DeviceRoutes.HookCall
 import geotrellis.vector.Point
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
-object GeoRoutes {
+object DeviceRoutes {
   final case class HookCall(event: String, data: String, coreid: String, published_at: String)
   object HookCall extends DefaultJsonProtocol {
     implicit val format: RootJsonFormat[HookCall] = jsonFormat4(HookCall.apply)
   }
 }
 
-trait GeoRoutes {
+trait DeviceRoutes {
   import akka.http.scaladsl.server.Directives._
 
   def routes(devices: ActorRef, fencing: ActorRef)(implicit to: Timeout): Route =
