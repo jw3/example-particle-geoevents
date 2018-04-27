@@ -23,7 +23,7 @@ object DeviceRoutes {
 trait DeviceRoutes {
   import akka.http.scaladsl.server.Directives._
 
-  def routes(devices: ActorRef, fencing: ActorRef)(implicit to: Timeout): Route =
+  def deviceRoutes(devices: ActorRef, fencing: ActorRef)(implicit to: Timeout): Route =
     extractLog { logger ⇒
       extractExecutionContext { implicit ec ⇒
         pathPrefix("api") {

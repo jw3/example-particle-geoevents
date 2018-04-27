@@ -2,16 +2,16 @@ package com.github.jw3.geo
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.RouteConcatenation._
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 import net.ceedubs.ficus.Ficus._
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
-object Boot extends App with BootUtils with DeviceRoutes with GeoDatabase with LazyLogging {
+object Boot extends App with BootUtils with DeviceRoutes with EventRoutes with GeoDatabase with LazyLogging {
   val config = pickConfig()
 
   //
@@ -19,16 +19,16 @@ object Boot extends App with BootUtils with DeviceRoutes with GeoDatabase with L
 
   implicit val system: ActorSystem = ActorSystem("geoserver", config)
   implicit val mat: ActorMaterializer = ActorMaterializer()
-  implicit val timeout: Timeout = 10 seconds;
+  implicit val timeout: Timeout = 10 seconds
 
   //
   // connect readside
 
-  initdb() match {
+  val journaler = initdb() match {
     case Some(db) ⇒
       system.actorOf(Journaler.props(db), "journal")
     case None ⇒
-      logger.error("failed to connect readside db")
+      throw new RuntimeException("failed to connect readside db")
   }
 
   //
@@ -44,7 +44,8 @@ object Boot extends App with BootUtils with DeviceRoutes with GeoDatabase with L
   val port = config.as[Int]("geo.http.port")
 
   logger.info(s"starting http on $iface:$port")
-  Http().bindAndHandle(routes(devices, fencing), iface, port)
+  val routes = deviceRoutes(devices, fencing) ~ eventRoutes(journaler)
+  Http().bindAndHandle(routes, iface, port)
 }
 
 trait BootUtils {
