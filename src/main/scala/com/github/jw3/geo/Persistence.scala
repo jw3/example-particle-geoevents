@@ -1,6 +1,7 @@
 package com.github.jw3.geo
 
 import com.github.tminglei.slickpg.ExPostgresProfile
+import com.typesafe.config.Config
 import geotrellis.slick.PostGisSupport
 import geotrellis.vector.Point
 
@@ -29,13 +30,8 @@ object GeoConcepts {
 trait GeoDatabase {
   import com.github.jw3.geo.PgDriver.api._
 
-  private var db: Option[Database] = None
-
-  def initdb(): Option[Database] = {
-    if (db.isEmpty) db = {
-      import com.github.jw3.geo.PgDriver.api._
-      Try(Database.forConfig("events")).toOption
-    }
-    db
+  def initdb(config: Config): Try[Database] = {
+    import com.github.jw3.geo.PgDriver.api._
+    Try(Database.forConfig("slick", config))
   }
 }

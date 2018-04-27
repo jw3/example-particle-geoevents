@@ -10,6 +10,7 @@ import com.typesafe.scalalogging.LazyLogging
 import net.ceedubs.ficus.Ficus._
 
 import scala.concurrent.duration.DurationInt
+import scala.util.{Failure, Success}
 
 object Boot extends App with BootUtils with DeviceRoutes with EventRoutes with GeoDatabase with LazyLogging {
   val config = pickConfig()
@@ -24,11 +25,11 @@ object Boot extends App with BootUtils with DeviceRoutes with EventRoutes with G
   //
   // connect readside
 
-  val journaler = initdb() match {
-    case Some(db) ⇒
+  val journaler = initdb(config) match {
+    case Success(db) ⇒
       system.actorOf(Journaler.props(db), "journal")
-    case None ⇒
-      throw new RuntimeException("failed to connect readside db")
+    case Failure(ex) ⇒
+      throw new RuntimeException("failed to connect readside db", ex)
   }
 
   //
