@@ -11,3 +11,5 @@ CREATE DATABASE geoevents
 \c geoevents;
 
 CREATE EXTENSION postgis;
+
+grant all privileges on database geoevents to postgres;
