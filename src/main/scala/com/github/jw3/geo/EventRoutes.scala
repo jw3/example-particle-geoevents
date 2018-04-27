@@ -20,7 +20,7 @@ trait EventRoutes {
           get {
             extractUpgradeToWebSocket { upgrade ⇒
               complete {
-                val source = Events.readJournal
+                val source = Streams.readJournal
                   .map(_.event)
                   .filter {
                     case PositionUpdate(_, _) ⇒ true
