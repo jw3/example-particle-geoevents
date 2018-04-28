@@ -9,6 +9,7 @@ object Api {
   sealed trait Event
   sealed trait Response[_ <: Command]
 
+  // com.github.jw3.geo.Api$Events$
   object Events extends DefaultJsonProtocol {
     case class DeviceAdded(id: String) extends Event
 

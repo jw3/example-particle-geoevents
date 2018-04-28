@@ -1,5 +1,7 @@
 package com.github.jw3.geo
 
+import akka.persistence.journal.{Tagged, WriteEventAdapter}
+import com.github.jw3.geo.Api.Events.PositionUpdate
 import com.github.tminglei.slickpg.ExPostgresProfile
 import com.typesafe.config.Config
 import geotrellis.slick.PostGisSupport
@@ -33,5 +35,17 @@ trait GeoDatabase {
   def initdb(config: Config): Try[Database] = {
     import com.github.jw3.geo.PgDriver.api._
     Try(Database.forConfig("slick", config))
+  }
+}
+
+class TaggingEventAdapter extends WriteEventAdapter {
+  override def manifest(event: Any): String = ""
+
+  def withTag(event: Any, tag: String) = Tagged(event, Set(tag))
+
+  override def toJournal(event: Any): Any = event match {
+    case _: PositionUpdate ⇒
+      withTag(event, "event")
+    case _ ⇒ event
   }
 }
