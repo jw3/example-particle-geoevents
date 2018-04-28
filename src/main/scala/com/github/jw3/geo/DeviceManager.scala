@@ -23,10 +23,10 @@ class DeviceManager extends PersistentActor with ActorLogging {
 
   def receiveRecover: Receive = {
     case RecoveryCompleted ⇒
-      log.info(s"device manager restored via persistence")
+      log.debug(s"device manager restored via persistence")
 
     case SnapshotOffer(_, ss: DeviceManager.Snapshot) ⇒
-      log.info("restoring {} devices", ss.devices.size)
+      log.debug("restoring {} devices", ss.devices.size)
       ss.devices.foreach(self ! Events.DeviceAdded(_))
 
     case Events.DeviceAdded(id) ⇒

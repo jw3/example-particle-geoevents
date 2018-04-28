@@ -27,7 +27,7 @@ class Journaler(db: Database)(implicit mat: ActorMaterializer) extends Actor wit
   }
 
   def receive: Receive = {
-    case Success(_) ⇒ log.info("success")
+    case Success(_) ⇒ log.debug("read-side journal success")
     case Failure(ex) ⇒ log.error(ex, "read-side journal failure")
   }
 }
