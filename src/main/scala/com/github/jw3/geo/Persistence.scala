@@ -18,7 +18,7 @@ object PgDriver extends PgDriver
 object GeoConcepts {
   import com.github.jw3.geo.PgDriver.api._
 
-  class EventTable(tag: Tag) extends Table[(Int, String, Point)](tag, "events") {
+  class EventTable(tag: Tag) extends Table[(Int, String, Point)](tag, "positions") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def device = column[String]("device")
     def geometry = column[Point]("geometry")
