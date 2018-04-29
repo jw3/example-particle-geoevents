@@ -27,7 +27,8 @@ trait EventRoutes {
                     case _ ⇒ false
                   }
                   .map(_.asInstanceOf[PositionUpdate])
-                  .map(p ⇒ TextMessage(p.pos.toString()))
+                  .map(pu ⇒ s"${pu.device}:${pu.pos.x}:${pu.pos.y}")
+                  .map(TextMessage(_))
                 upgrade.handleMessages(Flow.fromSinkAndSource(Sink.ignore, source))
               }
             }
