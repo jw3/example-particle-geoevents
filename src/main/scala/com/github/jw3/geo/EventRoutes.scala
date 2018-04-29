@@ -16,7 +16,7 @@ trait EventRoutes {
   def eventRoutes(journaler: ActorRef): Route =
     pathPrefix("api") {
       extractActorSystem { implicit system ⇒
-        path("watch" / "device" / Segment) { id ⇒
+        path("watch" / "device") {
           get {
             extractUpgradeToWebSocket { upgrade ⇒
               complete {
