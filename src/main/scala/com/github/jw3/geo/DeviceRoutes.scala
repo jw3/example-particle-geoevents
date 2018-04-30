@@ -39,9 +39,8 @@ trait DeviceRoutes {
             path("device" / Segment / "move") { id ⇒
               post {
                 entity(as[HookCall]) { e ⇒
-                  // e.data = "34.12345:-79.09876"
-                  val xy = e.data.split(":")
-                  val pt = Point(xy(0).toDouble, xy(1).toDouble)
+                  val Array(lat, lon) = e.data.split(":")
+                  val pt = Point(lon.toDouble, lat.toDouble)
 
                   devices ! Commands.MoveDevice(id, pt)
                   complete(StatusCodes.OK)
