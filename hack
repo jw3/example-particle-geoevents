@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
 
+
+add() {
+  curl "localhost:9000/api/device/$1" -XPOST
+  echo ""
+}
+
+# take coords in lat lon format
 move() {
-  export ID="${ID:-dev-01}"
+  export ID="$1"
+  export POS="$2:$3"
   export EVENT="${EVENT:-geo}"
-  export POS="$1:$2"
 
   jq -n '{coreid: env.ID, event: env.EVENT, published_at: "now", data: env.POS}' \
-  | curl localhost:9000/api/device/dev12345-00001/move -H 'content-type: application/json' -d @-
+  | curl "localhost:9000/api/device/$ID/move" -H 'content-type: application/json' -d @-
+
+  echo ""
 }
 
 watch() {
