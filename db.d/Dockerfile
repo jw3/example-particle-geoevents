@@ -1,5 +1,4 @@
-ARG CRUNCHY_VERSION=10.3-1.8.2
-FROM crunchydata/crunchy-postgres-gis:centos7-${CRUNCHY_VERSION}
+FROM crunchydata/crunchy-postgres-gis:centos7-10.3-1.8.2
 
 ARG PG_MODE=primary
 ARG PG_DATABASE=postgres
