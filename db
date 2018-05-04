@@ -9,14 +9,7 @@ readonly password="${PASS:-postgres}"
 readonly port=5432
 
 start() {
-  echo "-- combined sql scripts" > "$pwdir/target/setup.sql"
-  echo "" >> "$pwdir/target/setup.sql"
-  for f in $(ls db.d/*.sql); do
-    echo "-- ############## ${f} ##############" >> "$pwdir/target/setup.sql"
-    cat "$f" >> "$pwdir/target/setup.sql"
-    echo "" >> "$pwdir/target/setup.sql"
-  done
-  chmod 777 "$pwdir/target/setup.sql"
+  ${pwdir}/db.d/one-script.sh "$pwdir/target/setup.sql"
 
   docker run "$@" \
     -p "$port:$port" \
