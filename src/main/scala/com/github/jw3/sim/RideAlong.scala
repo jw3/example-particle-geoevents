@@ -41,7 +41,7 @@ object RideAlong extends App {
         Source
           .fromIterator(() ⇒ t._2.lines.flatMap(_.points).iterator)
           .map(pt ⇒ HookCall("sim", s"${pt.y}:${pt.x}", t._1, "now"))
-          .throttle(Random.nextInt(15) + 1, FiniteDuration(Random.nextInt(60), TimeUnit.SECONDS))
+          .throttle(Random.nextInt(20) + 10, FiniteDuration(Random.nextInt(60), TimeUnit.SECONDS))
       }
     )
     .runWith(move)
