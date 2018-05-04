@@ -20,7 +20,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Failure, Random, Success}
 
-object RideAlong extends App {
+object RideAlong {
   implicit val system = ActorSystem("sim")
   implicit val mat = ActorMaterializer()
 
