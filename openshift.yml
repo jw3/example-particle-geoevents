@@ -5,8 +5,8 @@ metadata:
 message: |-
   The following service(s) have been created in your project: ${NAME}.
 
-     Postgis Server: ${PERSIST_HOST}
-    Geoevent Server: ${PERSIST_DB_NAME}
+    Geoevent Server: ${NAME}
+     Postgis Server: ${NAME}-db
 
 parameters:
 - name: NAME
@@ -129,13 +129,22 @@ objects:
           deploymentconfig: ${NAME}
       spec:
         containers:
-        - image: ""
+        - env:
+          - name: PERSIST_HOST
+            value: ${NAME}-db
+          resources:
+            requests:
+              cpu: 250m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+          image: ""
           imagePullPolicy: Always
           name: ${NAME}
           ports:
           - containerPort: 9000
             protocol: TCP
-          resources: {}
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         securityContext: {}
