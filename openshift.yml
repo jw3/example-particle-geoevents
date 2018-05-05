@@ -3,13 +3,13 @@ kind: Template
 metadata:
   name: geoevents
 message: |-
-  The following service(s) have been created in your project: ${DISPLAY_NAME}.
+  The following service(s) have been created in your project: ${NAME}.
 
      Postgis Server: ${PERSIST_HOST}
     Geoevent Server: ${PERSIST_DB_NAME}
 
 parameters:
-- name: DISPLAY_NAME
+- name: NAME
   displayName: Project Name
   description: The name given to components of this deployment.
   value: geoevents
@@ -35,18 +35,157 @@ parameters:
   value: postgres
   required: true
 
+- name: SOURCE_REPOSITORY_REF
+  displayName: Git ref
+  description: Branch or tag name.
+  value: master
+  required: true
+
 objects:
+
+#
+# geoevent server
+#
+
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: ${NAME}
+    annotations:
+      iconClass: "icon-scala"
+  spec:
+    resources:
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+    source:
+      type: Git
+      git:
+        uri: https://github.com/jw3/example-particle-geoevents.git
+        ref: ${SOURCE_REPOSITORY_REF}
+      contextDir: ""
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: jwiii/sbt-s2i:1.1.4-2.12.5
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${NAME}:latest
+    triggers:
+      - type: ConfigChange
+
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: ${NAME}
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ${NAME}
+    name: ${NAME}
+  spec:
+    ports:
+    - name: 9000-tcp
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    selector:
+      app: ${NAME}
+      deploymentconfig: ${NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
     labels:
-      app: ${DISPLAY_NAME}
-    name: ${DISPLAY_NAME}
+      app: ${NAME}
+    name: ${NAME}
   spec:
     replicas: 1
     selector:
-      app: ${DISPLAY_NAME}
-      deploymentconfig: ${DISPLAY_NAME}
+      app: ${NAME}
+      deploymentconfig: ${NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: ${NAME}
+          deploymentconfig: ${NAME}
+      spec:
+        containers:
+        - image: ""
+          imagePullPolicy: Always
+          name: ${NAME}
+          ports:
+          - containerPort: 9000
+            protocol: TCP
+          resources: {}
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${NAME}:latest
+      type: ImageChange
+
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${NAME}-sbt-s2i
+    annotations:
+      iconClass: icon-scala
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - from:
+        kind: DockerImage
+        name: jwiii/sbt-s2i:1.1.4-2.12.5
+      generation: 1
+      importPolicy: {}
+      name: 1.1.4-2.12.5
+      referencePolicy:
+        type: Source
+
+#
+# postgis server
+#
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: ${NAME}-db
+    name: ${NAME}-db
+  spec:
+    replicas: 1
+    selector:
+      app: ${NAME}-db
+      deploymentconfig: ${NAME}-db
     strategy:
       rollingParams:
         intervalSeconds: 1
@@ -58,11 +197,11 @@ objects:
     template:
       metadata:
         labels:
-          app: ${DISPLAY_NAME}
-          deploymentconfig: ${DISPLAY_NAME}
+          app: ${NAME}-db
+          deploymentconfig: ${NAME}-db
       spec:
         containers:
-        - name: ${DISPLAY_NAME}
+        - name: ${NAME}-db
           resources:
             requests:
               cpu: 100m
@@ -81,19 +220,19 @@ objects:
             value: ${PG_PRIMARY_PASSWORD}
           volumeMounts:
             - mountPath: /backrestrepo
-              name: ${DISPLAY_NAME}-1
+              name: ${NAME}-db-1
             - mountPath: /backup
-              name: ${DISPLAY_NAME}-2
+              name: ${NAME}-db-2
             - mountPath: /pgconf
-              name: ${DISPLAY_NAME}-3
+              name: ${NAME}-db-3
             - mountPath: /pgdata
-              name: ${DISPLAY_NAME}-4
+              name: ${NAME}-db-4
             - mountPath: /pgwal
-              name: ${DISPLAY_NAME}-5
+              name: ${NAME}-db-5
             - mountPath: /recover
-              name: ${DISPLAY_NAME}-6
+              name: ${NAME}-db-6
             - mountPath: /sshd
-              name: ${DISPLAY_NAME}-7
+              name: ${NAME}-db-7
           image: ""
           imagePullPolicy: Always
           ports:
@@ -105,35 +244,35 @@ objects:
         terminationGracePeriodSeconds: 30
         volumes:
           - emptyDir: {}
-            name: ${DISPLAY_NAME}-1
+            name: ${NAME}-db-1
           - emptyDir: {}
-            name: ${DISPLAY_NAME}-2
+            name: ${NAME}-db-2
           - emptyDir: {}
-            name: ${DISPLAY_NAME}-3
+            name: ${NAME}-db-3
           - emptyDir: {}
-            name: ${DISPLAY_NAME}-4
+            name: ${NAME}-db-4
           - emptyDir: {}
-            name: ${DISPLAY_NAME}-5
+            name: ${NAME}-db-5
           - emptyDir: {}
-            name: ${DISPLAY_NAME}-6
+            name: ${NAME}-db-6
           - emptyDir: {}
-            name: ${DISPLAY_NAME}-7
+            name: ${NAME}-db-7
     test: false
     triggers:
     - type: ConfigChange
     - imageChangeParams:
         automatic: true
         containerNames:
-        - ${DISPLAY_NAME}
+        - ${NAME}-db
         from:
           kind: ImageStreamTag
-          name: ${DISPLAY_NAME}-postgis:latest
+          name: ${NAME}-db-postgis:latest
       type: ImageChange
 
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: ${DISPLAY_NAME}-postgis
+    name: ${NAME}-db-postgis
     annotations:
       iconClass: icon-postgresql
   spec:
@@ -144,7 +283,6 @@ objects:
       from:
         kind: DockerImage
         name: jwiii/example-particle-geoevents:postgis
-      generation: 1
       importPolicy: {}
       referencePolicy:
         type: Source
