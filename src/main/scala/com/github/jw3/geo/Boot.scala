@@ -15,6 +15,7 @@ import scala.util.{Failure, Success}
 
 object Boot extends App with BootUtils with DeviceRoutes with EventRoutes with GeoDatabase with LazyLogging {
   val config = pickConfig()
+  logger.whenInfoEnabled { logger.info(banner(config)) }
 
   //
   // start the system
@@ -65,5 +66,17 @@ trait BootUtils {
       load("persistence-memory-app.conf")
     else
       load("persistence-postgres-app.conf")
+  }
+
+  def banner(cfg: Config): String = {
+    s"""
+      |
+      |geoevents server
+      |===============
+      |
+      | postgis db:    ${cfg.as[String]("slick.db.name")}
+      | postgis host:  ${cfg.as[String]("slick.db.host")}
+      |
+    """.stripMargin
   }
 }
