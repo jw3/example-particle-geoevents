@@ -1,0 +1,150 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: geoevents
+message: |-
+  The following service(s) have been created in your project: ${DISPLAY_NAME}.
+
+     Postgis Server: ${PERSIST_HOST}
+    Geoevent Server: ${PERSIST_DB_NAME}
+
+parameters:
+- name: DISPLAY_NAME
+  displayName: Project Name
+  description: The name given to components of this deployment.
+  value: geoevents
+  required: true
+
+- name: PG_DATABASE
+  displayName: Postgres Database
+  value: postgres
+  required: true
+
+- name: PG_ROOT_PASSWORD
+  displayName: Postgres Root Password
+  value: postgres
+  required: true
+
+- name: PG_PRIMARY_USER
+  displayName: Postgres User
+  value: postgres
+  required: true
+
+- name: PG_PRIMARY_PASSWORD
+  displayName: Postgres Password
+  value: postgres
+  required: true
+
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: ${DISPLAY_NAME}
+    name: ${DISPLAY_NAME}
+  spec:
+    replicas: 1
+    selector:
+      app: ${DISPLAY_NAME}
+      deploymentconfig: ${DISPLAY_NAME}
+    strategy:
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: ${DISPLAY_NAME}
+          deploymentconfig: ${DISPLAY_NAME}
+      spec:
+        containers:
+        - name: ${DISPLAY_NAME}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          env:
+          - name: PG_DATABASE
+            value: ${PG_DATABASE}
+          - name: PG_ROOT_PASSWORD
+            value: ${PG_ROOT_PASSWORD}
+          - name: PG_PRIMARY_USER
+            value: ${PG_PRIMARY_USER}
+          - name: PG_PRIMARY_PASSWORD
+            value: ${PG_PRIMARY_PASSWORD}
+          volumeMounts:
+            - mountPath: /backrestrepo
+              name: ${DISPLAY_NAME}-1
+            - mountPath: /backup
+              name: ${DISPLAY_NAME}-2
+            - mountPath: /pgconf
+              name: ${DISPLAY_NAME}-3
+            - mountPath: /pgdata
+              name: ${DISPLAY_NAME}-4
+            - mountPath: /pgwal
+              name: ${DISPLAY_NAME}-5
+            - mountPath: /recover
+              name: ${DISPLAY_NAME}-6
+            - mountPath: /sshd
+              name: ${DISPLAY_NAME}-7
+          image: ""
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 9000
+            protocol: TCP
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+          - emptyDir: {}
+            name: ${DISPLAY_NAME}-1
+          - emptyDir: {}
+            name: ${DISPLAY_NAME}-2
+          - emptyDir: {}
+            name: ${DISPLAY_NAME}-3
+          - emptyDir: {}
+            name: ${DISPLAY_NAME}-4
+          - emptyDir: {}
+            name: ${DISPLAY_NAME}-5
+          - emptyDir: {}
+            name: ${DISPLAY_NAME}-6
+          - emptyDir: {}
+            name: ${DISPLAY_NAME}-7
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${DISPLAY_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${DISPLAY_NAME}-postgis:latest
+      type: ImageChange
+
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${DISPLAY_NAME}-postgis
+    annotations:
+      iconClass: icon-postgresql
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: jwiii/example-particle-geoevents:postgis
+      generation: 1
+      importPolicy: {}
+      referencePolicy:
+        type: Source
