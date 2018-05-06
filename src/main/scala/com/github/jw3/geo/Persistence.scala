@@ -2,6 +2,7 @@ package com.github.jw3.geo
 
 import akka.persistence.journal.{Tagged, WriteEventAdapter}
 import com.github.jw3.geo.Api.Events.PositionUpdate
+import com.github.jw3.geo.Api.Tags
 import com.github.tminglei.slickpg.ExPostgresProfile
 import com.typesafe.config.Config
 import geotrellis.slick.PostGisSupport
@@ -45,7 +46,7 @@ class TaggingEventAdapter extends WriteEventAdapter {
 
   override def toJournal(event: Any): Any = event match {
     case _: PositionUpdate ⇒
-      withTag(event, "event")
+      withTag(event, Tags.Movement)
     case _ ⇒ event
   }
 }

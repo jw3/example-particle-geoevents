@@ -41,7 +41,7 @@ object Api {
   }
 
   object Tags {
-    val Events = "events"
+    val Movement = "movement"
     val Tracks = "tracks"
   }
 }

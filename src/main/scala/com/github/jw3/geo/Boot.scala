@@ -53,7 +53,7 @@ object Boot extends App with BootUtils with DeviceRoutes with EventRoutes with G
   //
   // log event stream
   logger.whenDebugEnabled {
-    Streams.readJournal().runWith(Sink.foreach(ee ⇒ logger.debug("event: {}", ee.event)))
+    Streams.movement().runWith(Sink.foreach(ee ⇒ logger.debug("event: {}", ee.event)))
   }
 }
 

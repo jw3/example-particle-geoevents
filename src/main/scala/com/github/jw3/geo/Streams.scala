@@ -8,7 +8,7 @@ import akka.stream.scaladsl.Source
 import com.github.jw3.geo.Api.Tags
 
 object Streams {
-  def readJournal(offset: Offset = NoOffset)(implicit sys: ActorSystem): Source[EventEnvelope, NotUsed] = {
-    PersistenceQuery(sys).readJournalFor[JdbcReadJournal](JdbcReadJournal.Identifier).eventsByTag(Tags.Events, offset)
+  def movement(offset: Offset = NoOffset)(implicit sys: ActorSystem): Source[EventEnvelope, NotUsed] = {
+    PersistenceQuery(sys).readJournalFor[JdbcReadJournal](JdbcReadJournal.Identifier).eventsByTag(Tags.Movement, offset)
   }
 }

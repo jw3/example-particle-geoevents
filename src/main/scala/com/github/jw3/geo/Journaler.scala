@@ -19,7 +19,7 @@ object Journaler {
 class Journaler(db: Database)(implicit mat: ActorMaterializer) extends Actor with ActorLogging {
   import context.{dispatcher, system}
 
-  Streams.readJournal().runForeach {
+  Streams.movement().runForeach {
     case EventEnvelope(_, _, _, PositionUpdate(dev, pos)) ⇒
       val action = events += ((0, dev, pos))
       db.run(action).onComplete(context.self ! _)
