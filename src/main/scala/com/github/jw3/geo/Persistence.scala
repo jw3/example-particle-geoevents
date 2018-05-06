@@ -34,7 +34,7 @@ trait GeoDatabase {
 
   def initdb(config: Config): Try[Database] = {
     import com.github.jw3.geo.PgDriver.api._
-    Try(Database.forConfig("slick", config))
+    Try(Database.forConfig("slick.db", config))
   }
 }
 
