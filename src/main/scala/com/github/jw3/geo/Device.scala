@@ -34,14 +34,13 @@ class Device(id: String) extends PersistentActor with ActorLogging {
     //
     case Commands.MoveDevice(_, g) ⇒
       persist(Events.PositionUpdate(id, g)) { e ⇒
-        DeviceManager.device(id).foreach(_ ! e)
+        //
       }
 
     //
     // events
     //
     case e @ Events.PositionUpdate(_id, _) if _id == id ⇒
-      DeviceManager.device(id).foreach(_ ! e)
 
     //
     // read-only commands

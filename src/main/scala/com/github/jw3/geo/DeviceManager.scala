@@ -3,10 +3,11 @@ package com.github.jw3.geo
 import akka.actor.{ActorContext, ActorLogging, ActorRef, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted, SnapshotOffer}
 import com.github.jw3.geo.Api.{Commands, Events, Responses}
+import DeviceManager._
 
 object DeviceManager {
   def props() = Props(new DeviceManager)
-  def device(id: String)(implicit ctx: ActorContext): Option[ActorRef] = ctx.child(id)
+  private def device(id: String)(implicit ctx: ActorContext): Option[ActorRef] = ctx.child(id)
 
   case class Snapshot(devices: Set[String])
 
@@ -40,7 +41,7 @@ class DeviceManager extends PersistentActor with ActorLogging {
     //
     case Commands.AddDevice(id) ⇒
       val replyto = sender()
-      context.child(id) match {
+      device(id) match {
         case Some(_) ⇒ replyto ! Responses.DeviceExists(id)
         case None ⇒
           persist(Events.DeviceAdded(id)) { e ⇒
@@ -60,7 +61,7 @@ class DeviceManager extends PersistentActor with ActorLogging {
     // queries
     //
     case DeviceManager.QueryDeviceStatus(id) ⇒
-      context.child(id) match {
+      device(id) match {
         case None ⇒ sender ! DeviceManager.DeviceStatusUnknown
         case Some(_) ⇒ sender ! DeviceManager.DeviceOnline
       }
