@@ -1,5 +1,7 @@
 package com.github.jw3.geo
 
+import java.util.UUID
+
 import akka.actor.{ActorLogging, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted, SnapshotOffer}
 import com.github.jw3.geo.Api.{Commands, Events, Responses}
@@ -14,6 +16,7 @@ object Device {
 class Device(id: String) extends PersistentActor with ActorLogging {
   val persistenceId: String = id
   var position: Option[Point] = None
+  var tracking: Option[String] = None
 
   def receiveRecover: Receive = {
     case RecoveryCompleted ⇒
@@ -37,15 +40,24 @@ class Device(id: String) extends PersistentActor with ActorLogging {
         //
       }
 
+    case Commands.StartTracking(`id`) if tracking.isEmpty ⇒
+      persist(Events.TrackStarted(UUID.randomUUID.toString.take(8), id)) { e ⇒
+        tracking = Some(e.id)
+      }
+
+    case Commands.StopTracking(`id`) if tracking.nonEmpty ⇒
+      persist(Events.TrackCompleted(tracking.get, id)) { e ⇒
+        tracking = None
+      }
+
     //
     // events
     //
-    case e @ Events.PositionUpdate(_id, _) if _id == id ⇒
-
+    case e @ Events.PositionUpdate(`id`, _) ⇒
     //
     // read-only commands
     //
-    case Commands.GetDevicePosition(_id) if _id == id ⇒
+    case Commands.GetDevicePosition(`id`) ⇒
       position match {
         case None ⇒ sender ! Responses.UnknownDevicePosition(id)
         case Some(p) ⇒ sender ! Responses.DevicePosition(id, p)
