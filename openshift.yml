@@ -185,6 +185,26 @@ objects:
 #
 
 - apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ${NAME}-db
+    name: ${NAME}-db
+  spec:
+    ports:
+    - name: 5432-tcp
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+    selector:
+      app: ${NAME}-db
+      deploymentconfig: ${NAME}-db
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+
+- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     labels:
@@ -245,7 +265,7 @@ objects:
           image: ""
           imagePullPolicy: Always
           ports:
-          - containerPort: 9000
+          - containerPort: 5432
             protocol: TCP
         dnsPolicy: ClusterFirst
         restartPolicy: Always
