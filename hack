@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 readonly host="${HOST:-localhost}"
-readonly port="${PORT:-5432}"
+readonly port="${PORT:-9000}"
 
 add() {
   curl "$host:$port/api/device/$1" -XPOST
