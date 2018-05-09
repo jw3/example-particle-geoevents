@@ -1,17 +1,17 @@
 package com.github.jw3.geo
 
 import akka.persistence.journal.{Tagged, WriteEventAdapter}
-import com.github.jw3.geo.Api.Events.PositionUpdate
+import com.github.jw3.geo.Api.Events.{PositionUpdate, TrackingEvent}
 import com.github.jw3.geo.Api.Tags
 import com.github.tminglei.slickpg.ExPostgresProfile
 import com.typesafe.config.Config
 import geotrellis.slick.PostGisSupport
-import geotrellis.vector.Point
+import geotrellis.vector.{Line, Point}
 
 import scala.util.Try
 
 trait PgDriver extends ExPostgresProfile with PostGisSupport {
-  override val api = GeoEventApi
+  final override val api = GeoEventApi
   object GeoEventApi extends API with PostGISImplicits
 }
 object PgDriver extends PgDriver
@@ -27,6 +27,17 @@ object GeoConcepts {
   }
   object EventTable {
     val events = TableQuery[EventTable]
+  }
+
+  class TrackTable(tag: Tag) extends Table[(Int, String, Long, Line)](tag, "tracks") {
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def device = column[String]("device")
+    def startseq = column[Long]("startseq")
+    def geometry = column[Line]("geometry")
+    def * = (id, device, startseq, geometry)
+  }
+  object TrackTable {
+    val tracks = TableQuery[TrackTable]
   }
 }
 
@@ -47,6 +58,8 @@ class TaggingEventAdapter extends WriteEventAdapter {
   override def toJournal(event: Any): Any = event match {
     case _: PositionUpdate ⇒
       withTag(event, Tags.Movement)
+    case _: TrackingEvent ⇒
+      withTag(event, Tags.Tracks)
     case _ ⇒ event
   }
 }
