@@ -4,6 +4,7 @@ import akka.actor.{ActorContext, ActorLogging, ActorRef, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted, SnapshotOffer}
 import com.github.jw3.geo.Api.{Commands, Events, Responses}
 import DeviceManager._
+import com.github.jw3.geo.Api.Commands.TrackingCommand
 
 object DeviceManager {
   def props() = Props(new DeviceManager)
@@ -70,6 +71,9 @@ class DeviceManager extends PersistentActor with ActorLogging {
     // read-only commands
     //
     case c @ Commands.MoveDevice(id, _) ⇒
-      context.child(id).foreach(_ forward c)
+      device(id).foreach(_ forward c)
+
+    case c: TrackingCommand ⇒
+      device(c.device).foreach(_ forward c)
   }
 }

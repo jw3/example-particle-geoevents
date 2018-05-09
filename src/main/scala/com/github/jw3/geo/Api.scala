@@ -12,8 +12,23 @@ object Api {
   // com.github.jw3.geo.Api$Events$
   object Events extends DefaultJsonProtocol {
     case class DeviceAdded(id: String) extends Event
-    case class TrackStarted(id: String, device: String) extends Event
-    case class TrackCompleted(id: String, device: String) extends Event
+
+    sealed trait TrackingEvent
+
+    case class TrackStarted(id: String, device: String, beginSeqNr: Long, beginPt: Point)
+        extends Event
+        with TrackingEvent
+
+    case class TrackCompleted(id: String,
+                              device: String,
+                              beginSeqNr: Long,
+                              endSeqNr: Long,
+                              beginPt: Point,
+                              endPt: Point)
+        extends Event
+        with TrackingEvent
+
+    case class TrackCancelled(id: String, beginPt: Point, endPt: Point) extends Event with TrackingEvent
 
     case class PositionUpdate(device: String, pos: Point) extends Event
     object PositionUpdate {
@@ -28,8 +43,11 @@ object Api {
     case class GetDevicePosition(id: String) extends Command
     case class MoveDevice(device: String, geom: Point) extends Command
 
-    case class StartTracking(device: String) extends Command
-    case class StopTracking(device: String) extends Command
+    sealed trait TrackingCommand {
+      def device: String
+    }
+    case class StartTracking(device: String) extends Command with TrackingCommand
+    case class StopTracking(device: String) extends Command with TrackingCommand
 
     case class AddFencing(name: String, geom: Polygon) extends Command
   }

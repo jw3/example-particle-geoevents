@@ -47,6 +47,19 @@ trait DeviceRoutes {
                 }
               }
             } ~
+            path("device" / Segment / "track" / Segment) { (id, op) ⇒
+              post {
+                op match {
+                  case "start" ⇒
+                    devices ! Commands.StartTracking(id)
+                    complete(StatusCodes.OK)
+                  case "stop" ⇒
+                    devices ! Commands.StopTracking(id)
+                    complete(StatusCodes.OK)
+                  case _ ⇒ complete(StatusCodes.NotFound)
+                }
+              }
+            } ~
             path("fence") {
               post {
                 complete(StatusCodes.OK)

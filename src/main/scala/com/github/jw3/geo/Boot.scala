@@ -4,7 +4,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.RouteConcatenation._
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Sink
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
@@ -49,12 +48,6 @@ object Boot extends App with BootUtils with DeviceRoutes with EventRoutes with G
   logger.info(s"starting http on $iface:$port")
   val routes = deviceRoutes(devices, fencing) ~ eventRoutes(journaler)
   Http().bindAndHandle(routes, iface, port)
-
-  //
-  // log event stream
-  logger.whenDebugEnabled {
-    Streams.movement().runWith(Sink.foreach(ee ⇒ logger.debug("event: {}", ee.event)))
-  }
 }
 
 trait BootUtils {
