@@ -25,6 +25,23 @@ move() {
   echo ""
 }
 
+track() {
+  curl "$host:$port/api/device/$1/track/$2" -XPOST
+  echo ""
+}
+
+simulate() {
+  local device="$1"
+  local number="${2:-2}"
+
+  for p in $(seq 1 ${number}); do
+    a=$(( ( RANDOM % 9 ) ))
+    b=$(( ( RANDOM % 9 ) ))
+    c=$(( ( RANDOM % 9 ) ))
+    echo """ move "$device" "39.$a$b" "-79.$c$a" """
+  done
+}
+
 watch() {
   export WS_URI="http://$host:$port/api/watch"
   "$@"
