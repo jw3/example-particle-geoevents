@@ -1,9 +1,11 @@
-enablePlugins(GitVersioning, JavaServerAppPackaging, DockerPlugin)
+enablePlugins(GitVersioning, BuildInfoPlugin, JavaServerAppPackaging, DockerPlugin)
 
 name := "example-particle-geoserver"
 organization := "com.github.jw3"
 scalaVersion := "2.12.5"
 git.useGitDescribe := true
+
+buildInfoPackage := organization.value
 
 scalacOptions ++= Seq(
   "-target:jvm-1.8",

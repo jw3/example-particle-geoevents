@@ -5,6 +5,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.RouteConcatenation._
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
+import com.github.jw3.BuildInfo
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 import net.ceedubs.ficus.Ficus._
@@ -63,13 +64,37 @@ trait BootUtils {
 
   def banner(cfg: Config): String = {
     s"""
-      |
-      |geoevents server
-      |===============
-      |
-      | postgis db:    ${cfg.as[String]("slick.db.name")}
-      | postgis host:  ${cfg.as[String]("slick.db.host")}
-      |
-    """.stripMargin
+        |
+        |       ,---.
+        |    ,.'-.   \\
+        |   ( ( ,'\"\"\"\"\"-.
+        |   `,X          `.
+        |   /` `           `._
+        |  (            ,   ,_\\
+        |  |          ,---.,'o `.
+        |  |         / o   \\     )
+        |   \\ ,.    (      .____,
+        |    \\| \\    \\____,'     \\
+        |  '`'\\  \\        _,____,'
+        |  \\  ,--      ,-'     \\
+        |    ( C     ,'         \\
+        |     `--'  .'           |
+        |       |   |         .O |     doh v${BuildInfo.version}
+        |     __|    \\        ,-'_
+        |    / `L     `._  _,'  ' `.
+        |   /    `--.._  `',.   _\\  `
+        |   `-.       /\\  | `. ( ,\\  \\
+        |  _/  `-._  /  \\ |--'  (     \\
+        | '  `-.   `'    \\/\\`.   `.    )
+        |       \\  -hrr-    \\ `.  |    |
+        |
+        |
+        |geoevents server
+        |===============
+        |
+        | postgis db:    ${cfg.as[String]("slick.db.name")}
+        | postgis host:  ${cfg.as[String]("slick.db.host")}
+        |
+      """.stripMargin
   }
 }
