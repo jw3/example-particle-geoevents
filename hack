@@ -30,6 +30,11 @@ track() {
   echo ""
 }
 
+gettrack() {
+  curl "$host:$port/api/track/$1"
+  echo ""
+}
+
 simulate() {
   local device="$1"
   local number="${2:-2}"

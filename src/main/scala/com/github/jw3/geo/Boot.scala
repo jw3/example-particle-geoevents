@@ -13,7 +13,15 @@ import net.ceedubs.ficus.Ficus._
 import scala.concurrent.duration.DurationInt
 import scala.util.{Failure, Success}
 
-object Boot extends App with BootUtils with DeviceRoutes with EventRoutes with GeoDatabase with LazyLogging {
+object Boot
+    extends App
+    with BootUtils
+    with DeviceRoutes
+    with EventRoutes
+    with GeoDatabase
+    with DataRoutes
+    with LazyLogging {
+
   val config = pickConfig()
   logger.whenInfoEnabled { logger.info(banner(config)) }
 
@@ -27,12 +35,13 @@ object Boot extends App with BootUtils with DeviceRoutes with EventRoutes with G
   //
   // connect readside
 
-  val journaler = initdb(config) match {
-    case Success(db) ⇒
-      system.actorOf(Journaler.props(db), "journal")
+  val db = initdb(config) match {
+    case Success(db) ⇒ db
     case Failure(ex) ⇒
       throw new RuntimeException("failed to connect readside db", ex)
   }
+
+  val journaler = system.actorOf(Journaler.props(db), "journal")
 
   //
   // start top level components
@@ -47,7 +56,7 @@ object Boot extends App with BootUtils with DeviceRoutes with EventRoutes with G
   val port = config.as[Int]("geo.http.port")
 
   logger.info(s"starting http on $iface:$port")
-  val routes = deviceRoutes(devices, fencing) ~ eventRoutes(journaler)
+  val routes = deviceRoutes(devices, fencing) ~ eventRoutes(journaler) ~ dataRoutes(db)
   Http().bindAndHandle(routes, iface, port)
 }
 
