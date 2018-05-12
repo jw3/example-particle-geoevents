@@ -52,11 +52,12 @@ class Device(id: String) extends PersistentActor with ActorLogging {
     //
     case Commands.MoveDevice(_, g) ⇒
       persist(Events.PositionUpdate(id, g)) { e ⇒
-        //
+        position = Some(e.pos)
       }
 
     case Commands.StartTracking(`id`) if tracking.isEmpty ⇒
       position.foreach { pt ⇒
+        log.debug("start tracking")
         val seqNr = lastSequenceNr + 1
         val trackId = UUID.randomUUID.toString.take(8)
         persist(Events.TrackStarted(trackId, id, seqNr, pt)) { e ⇒
@@ -69,6 +70,7 @@ class Device(id: String) extends PersistentActor with ActorLogging {
         end ← position
         t ← tracking
       } {
+        log.debug("stop tracking")
         persist(Events.TrackCompleted(t.id, id, t.seqNr, lastSequenceNr, t.startPt, end)) { _ ⇒
           tracking = None
         }
@@ -78,6 +80,8 @@ class Device(id: String) extends PersistentActor with ActorLogging {
     // events
     //
     case e @ Events.PositionUpdate(`id`, _) ⇒
+      position = Some(e.pos)
+
     //
     // read-only commands
     //
