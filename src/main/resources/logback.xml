@@ -7,6 +7,7 @@
 
     <logger name="slick" level="${JDBC_LOG_LEVEL:-warn}"/>
     <logger name="com.zaxxer.hikari" level="${JDBC_LOG_LEVEL:-warn}"/>
+    <logger name="akka.actor.TimerScheduler" level="${JDBC_LOG_LEVEL:-warn}"/>
 
     <root level="${LOG_LEVEL:-info}">
         <appender-ref ref="console"/>
