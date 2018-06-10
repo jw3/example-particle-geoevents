@@ -36,7 +36,7 @@ object Boot
   // connect readside
 
   val db = initdb(config) match {
-    case Success(db) ⇒ db
+    case Success(v) ⇒ v
     case Failure(ex) ⇒
       throw new RuntimeException("failed to connect readside db", ex)
   }
@@ -56,7 +56,7 @@ object Boot
   val port = config.as[Int]("geo.http.port")
 
   logger.info(s"starting http on $iface:$port")
-  val routes = deviceRoutes(devices, fencing) ~ eventRoutes(journaler) ~ dataRoutes(db)
+  val routes = deviceRoutes(devices, fencing) ~ eventRoutes() ~ dataRoutes(db)
   Http().bindAndHandle(routes, iface, port)
 }
 
