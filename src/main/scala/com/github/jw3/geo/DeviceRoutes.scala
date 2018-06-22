@@ -6,9 +6,10 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.util.Timeout
-import com.github.jw3.geo.Api.Commands
+import com.github.jw3.geo.Api.{Commands}
 import com.github.jw3.geo.Api.Commands.AddDevice
 import com.github.jw3.geo.Api.Events.DeviceAdded
+import com.github.jw3.geo.Api.Responses.DeviceExists
 import com.github.jw3.geo.DeviceRoutes.HookCall
 import geotrellis.vector.Point
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
@@ -30,7 +31,8 @@ trait DeviceRoutes {
           path("device" / Segment) { id ⇒
             post {
               val res = (devices ? AddDevice(id)).map {
-                case DeviceAdded(_) ⇒ StatusCodes.OK
+                case DeviceAdded(_) ⇒ StatusCodes.Created
+                case DeviceExists(_) ⇒ StatusCodes.OK
                 case _ ⇒ StatusCodes.InternalServerError
               }
               complete(res)
