@@ -9,6 +9,9 @@
     <logger name="com.zaxxer.hikari" level="${JDBC_LOG_LEVEL:-warn}"/>
     <logger name="akka.actor.TimerScheduler" level="${JDBC_LOG_LEVEL:-warn}"/>
 
+    <logger name="akka.io.TcpListener" level="warn"/>
+    <logger name="akka.io.TcpIncomingConnection" level="warn"/>
+
     <root level="${LOG_LEVEL:-info}">
         <appender-ref ref="console"/>
     </root>
