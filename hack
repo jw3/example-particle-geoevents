@@ -47,15 +47,9 @@ simulate() {
   done
 }
 
-# usage: ./hack watch device foo1
 watch() {
-  export WS_URI="http://$host:$port/api/watch"
-  "$@"
+  websocat "ws://$host:$port/api/watch/device"
 }
 
-device() {
-  local device="$1"
-  curl -i -N -H "Connection: upgrade" -H "Upgrade: websocket" -H 'Host: localhost' "$WS_URI/device/$device"
-}
 
 "$@"

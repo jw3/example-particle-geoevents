@@ -14,6 +14,9 @@ A prototype geoevent and geofencing server that deploys to OpenShift online and 
 
 ### Development
 
+#### tools
+- https://github.com/vi/websocat
+
 #### geotrellis-vector (published to 2.12.x)
 
 https://github.com/jw3/geotrellis/tree/2.12.5
