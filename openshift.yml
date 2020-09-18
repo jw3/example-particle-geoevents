@@ -61,7 +61,7 @@ objects:
     source:
       type: Git
       git:
-        uri: https://github.com/jw3/example-particle-geoevents.git
+        uri: https://github.com/jw3/geo-event-sourcing.git
         ref: ${SOURCE_REPOSITORY_REF}
       contextDir: ""
     strategy:
@@ -326,7 +326,7 @@ objects:
     - name: latest
       from:
         kind: DockerImage
-        name: jwiii/example-particle-geoevents:postgis
+        name: jwiii/geo-event-sourcing:postgis
       importPolicy: {}
       referencePolicy:
         type: Source
