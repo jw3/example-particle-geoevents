@@ -56,7 +56,7 @@ object Boot
   val port = config.as[Int]("geo.http.port")
 
   logger.info(s"starting http on $iface:$port")
-  val routes = deviceRoutes(devices, fencing) ~ eventRoutes() ~ dataRoutes(db)
+  val routes = deviceRoutes(devices) ~ eventRoutes() ~ dataRoutes(db)
   Http().bindAndHandle(routes, iface, port)
 }
 

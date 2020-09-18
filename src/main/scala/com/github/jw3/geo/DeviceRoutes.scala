@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.util.Timeout
-import com.github.jw3.geo.Api.{Commands}
+import com.github.jw3.geo.Api.Commands
 import com.github.jw3.geo.Api.Commands.AddDevice
 import com.github.jw3.geo.Api.Events.DeviceAdded
 import com.github.jw3.geo.Api.Responses.DeviceExists
@@ -15,16 +15,16 @@ import geotrellis.vector.Point
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
 object DeviceRoutes {
-  final case class HookCall(event: String, data: String, coreid: String, published_at: String)
+  final case class HookCall(pos: String)
   object HookCall extends DefaultJsonProtocol {
-    implicit val format: RootJsonFormat[HookCall] = jsonFormat4(HookCall.apply)
+    implicit val format: RootJsonFormat[HookCall] = jsonFormat1(HookCall.apply)
   }
 }
 
 trait DeviceRoutes {
   import akka.http.scaladsl.server.Directives._
 
-  def deviceRoutes(devices: ActorRef, fencing: ActorRef)(implicit to: Timeout): Route =
+  def deviceRoutes(devices: ActorRef)(implicit to: Timeout): Route =
     extractLog { logger ⇒
       extractExecutionContext { implicit ec ⇒
         pathPrefix("api") {
@@ -41,11 +41,9 @@ trait DeviceRoutes {
             path("device" / Segment / "move") { id ⇒
               post {
                 entity(as[HookCall]) { e ⇒
-                  val Array(lat, lon) = e.data.split(":")
-                  val pt = Point(lon.toDouble, lat.toDouble)
-
-                  devices ! Commands.MoveDevice(id, pt)
-                  complete(StatusCodes.OK)
+                  val Array(lat, lon) = e.pos.split(":")
+                  devices ! Commands.MoveDevice(id, Point(lon.toDouble, lat.toDouble))
+                  complete(StatusCodes.Accepted)
                 }
               }
             } ~
@@ -60,11 +58,6 @@ trait DeviceRoutes {
                     complete(StatusCodes.OK)
                   case _ ⇒ complete(StatusCodes.NotFound)
                 }
-              }
-            } ~
-            path("fence") {
-              post {
-                complete(StatusCodes.OK)
               }
             } ~
             path("health") {

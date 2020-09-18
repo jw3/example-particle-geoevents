@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-readonly host="${HOST:-localhost}"
+readonly host="${HOST:-${HOSTNAME}}"
 readonly port="${PORT:-9000}"
 
 add() {
@@ -17,9 +17,8 @@ health() {
 move() {
   export ID="$1"
   export POS="$2:$3"
-  export EVENT="${EVENT:-geo}"
 
-  jq -n '{coreid: env.ID, event: env.EVENT, published_at: "now", data: env.POS}' \
+  jq -n '{pos: env.POS}' \
   | curl "$host:$port/api/device/$ID/move" -H 'content-type: application/json' -d @-
 
   echo ""
@@ -48,6 +47,7 @@ simulate() {
   done
 }
 
+# usage: ./hack watch device foo1
 watch() {
   export WS_URI="http://$host:$port/api/watch"
   "$@"
