@@ -45,18 +45,12 @@ class DeviceManager extends PersistentActor with ActorLogging {
       device(id) match {
         case Some(_) ⇒ replyto ! Responses.DeviceExists(id)
         case None ⇒
+          val ref = context.actorOf(Device.props(id), id)
           persist(Events.DeviceAdded(id)) { e ⇒
-            self ! e
             replyto ! e
+            log.debug("device added [{}]", ref.path.name)
           }
       }
-
-    //
-    // events
-    //
-    case Events.DeviceAdded(id) ⇒
-      val ref = context.actorOf(Device.props(id), id)
-      log.debug("created device [{}]", ref.path.name)
 
     //
     // queries
