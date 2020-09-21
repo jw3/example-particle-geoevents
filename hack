@@ -42,8 +42,9 @@ simulate() {
     a=$(( ( RANDOM % 9 ) ))
     b=$(( ( RANDOM % 9 ) ))
     c=$(( ( RANDOM % 9 ) ))
-    echo """ move "$device" "39.$a$b" "-79.$c$a" """
-    move "$device" "39.$a$b" "-79.$c$a"
+    echo """ move $device 39.$a$b -79.$c$a """
+    move "$device" "39.$a$b" "-79.$c$a" &> /dev/null
+    sleep 1
   done
 }
 
