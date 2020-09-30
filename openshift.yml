@@ -55,9 +55,9 @@ objects:
       iconClass: "icon-scala"
   spec:
     resources:
-      limits:
+      requests:
         cpu: "1"
-        memory: "1Gi"
+        memory: "2Gi"
     source:
       type: Git
       git:
