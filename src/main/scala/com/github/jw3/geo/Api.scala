@@ -40,7 +40,6 @@ object Api {
 
   object Commands extends DefaultJsonProtocol {
     case class AddDevice(id: String) extends Command
-    case class GetDevicePosition(id: String) extends Command
     case class MoveDevice(device: String, geom: Point) extends Command
 
     sealed trait TrackingCommand {
@@ -52,10 +51,14 @@ object Api {
     case class AddFencing(name: String, geom: Polygon) extends Command
   }
 
+  object Queries extends DefaultJsonProtocol {
+    case class GetDevicePosition(id: String) extends Command
+  }
+
   object Responses extends DefaultJsonProtocol {
     case class DeviceExists(id: String) extends Response[Commands.AddDevice]
-    case class UnknownDevicePosition(id: String) extends Response[Commands.GetDevicePosition]
-    case class DevicePosition(id: String, geom: Point) extends Response[Commands.GetDevicePosition]
+    case class UnknownDevicePosition(id: String) extends Response[Queries.GetDevicePosition]
+    case class DevicePosition(id: String, geom: Point) extends Response[Queries.GetDevicePosition]
   }
 
   object Tags {

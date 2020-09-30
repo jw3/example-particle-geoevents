@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.actor.{ActorLogging, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted, SnapshotOffer}
-import com.github.jw3.geo.Api.{Commands, Events, Responses}
+import com.github.jw3.geo.Api.{Commands, Events, Queries, Responses}
 import com.github.jw3.geo.Device.Track
 import geotrellis.vector.Point
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
@@ -85,7 +85,7 @@ class Device(id: String) extends PersistentActor with ActorLogging {
     //
     // read-only commands
     //
-    case Commands.GetDevicePosition(`id`) ⇒
+    case Queries.GetDevicePosition(`id`) ⇒
       position match {
         case None ⇒ sender ! Responses.UnknownDevicePosition(id)
         case Some(p) ⇒ sender ! Responses.DevicePosition(id, p)

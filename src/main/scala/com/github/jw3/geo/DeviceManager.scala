@@ -2,9 +2,9 @@ package com.github.jw3.geo
 
 import akka.actor.{ActorContext, ActorLogging, ActorRef, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted, SnapshotOffer}
-import com.github.jw3.geo.Api.{Commands, Events, Responses}
-import DeviceManager._
 import com.github.jw3.geo.Api.Commands.TrackingCommand
+import com.github.jw3.geo.Api.{Commands, Events, Queries, Responses}
+import com.github.jw3.geo.DeviceManager._
 
 object DeviceManager {
   def props() = Props(new DeviceManager)
@@ -61,8 +61,14 @@ class DeviceManager extends PersistentActor with ActorLogging {
         case Some(_) ⇒ sender ! DeviceManager.DeviceOnline
       }
 
+    case q @ Queries.GetDevicePosition(id) ⇒
+      device(id) match {
+        case Some(ref) => ref forward q
+        case None ⇒ sender ! Responses.UnknownDevicePosition
+      }
+
     //
-    // read-only commands
+    // forwarded
     //
     case c @ Commands.MoveDevice(id, _) ⇒
       device(id).foreach(_ forward c)

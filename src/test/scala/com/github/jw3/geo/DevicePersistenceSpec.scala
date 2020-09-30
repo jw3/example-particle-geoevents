@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, ActorSystem, PoisonPill, Props, Terminated}
 import akka.persistence.RecoveryCompleted
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.util.Timeout
-import com.github.jw3.geo.Api.{Commands, Responses}
+import com.github.jw3.geo.Api.{Commands, Queries, Responses}
 import com.github.jw3.geo.DevicePersistenceSpec._
 import com.github.jw3.geo.test.random
 import geotrellis.vector.Point
@@ -45,7 +45,7 @@ class DevicePersistenceSpec extends TestKit(ActorSystem()) with WordSpecLike wit
         val mgr = mock(pid)
         expectMsg(RecoveryCompleted)
 
-        mgr ! Commands.GetDevicePosition(pid)
+        mgr ! Queries.GetDevicePosition(pid)
         expectMsg(Responses.DevicePosition(pid, expected))
       }
     }
