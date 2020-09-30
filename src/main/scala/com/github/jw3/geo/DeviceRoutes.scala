@@ -10,7 +10,6 @@ import com.github.jw3.geo.Api.Commands
 import com.github.jw3.geo.Api.Commands.AddDevice
 import com.github.jw3.geo.Api.Events.DeviceAdded
 import com.github.jw3.geo.Api.Responses.DeviceExists
-import com.github.jw3.geo.DeviceRoutes.HookCall
 import geotrellis.vector.Point
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
@@ -18,6 +17,11 @@ object DeviceRoutes {
   final case class HookCall(pos: String)
   object HookCall extends DefaultJsonProtocol {
     implicit val format: RootJsonFormat[HookCall] = jsonFormat1(HookCall.apply)
+  }
+
+  case class MoveEvent(id: String, lon: String, lat: String)
+  object MoveEvent extends DefaultJsonProtocol {
+    implicit val format: RootJsonFormat[MoveEvent] = jsonFormat3(MoveEvent.apply)
   }
 }
 
@@ -28,38 +32,58 @@ trait DeviceRoutes {
     extractLog { logger ⇒
       extractExecutionContext { implicit ec ⇒
         pathPrefix("api") {
-          path("device" / Segment) { id ⇒
-            post {
-              val res = (devices ? AddDevice(id)).map {
-                case DeviceAdded(_) ⇒ StatusCodes.Created
-                case DeviceExists(_) ⇒ StatusCodes.OK
-                case _ ⇒ StatusCodes.InternalServerError
-              }
-              complete(res)
-            }
-          } ~
-            path("device" / Segment / "move") { id ⇒
+          pathPrefix("device") {
+            path("move") {
               post {
-                entity(as[HookCall]) { e ⇒
-                  val Array(lat, lon) = e.pos.split(":")
-                  devices ! Commands.MoveDevice(id, Point(lon.toDouble, lat.toDouble))
+                entity(as[DeviceRoutes.MoveEvent]) { e ⇒
+                  devices ! Commands.MoveDevice(e.id, Point(e.lon.toDouble, e.lat.toDouble))
                   complete(StatusCodes.Accepted)
-                }
+                } ~
+                  extractRequest { r ⇒
+                    complete(StatusCodes.Forbidden)
+                  }
               }
             } ~
-            path("device" / Segment / "track" / Segment) { (id, op) ⇒
-              post {
-                op match {
-                  case "start" ⇒
-                    devices ! Commands.StartTracking(id)
-                    complete(StatusCodes.OK)
-                  case "stop" ⇒
-                    devices ! Commands.StopTracking(id)
-                    complete(StatusCodes.OK)
-                  case _ ⇒ complete(StatusCodes.NotFound)
+              path(Segment) { id ⇒
+                //            get {
+                //              (devices ? Commands.GetDevicePosition(id)).map {
+                //                case
+                //              }
+                //            } ~
+                post {
+                  val res = (devices ? AddDevice(id)).map {
+                    case DeviceAdded(_) ⇒ StatusCodes.Created
+                    case DeviceExists(_) ⇒ StatusCodes.OK
+                    case _ ⇒ StatusCodes.InternalServerError
+                  }
+                  complete(res)
+                }
+              } ~
+              path(Segment / "move") { id ⇒
+                post {
+                  entity(as[DeviceRoutes.HookCall]) { e ⇒
+                    extractRequest { r ⇒
+                      val Array(lat, lon) = e.pos.split(":")
+                      devices ! Commands.MoveDevice(id, Point(lon.toDouble, lat.toDouble))
+                      complete(StatusCodes.Accepted)
+                    }
+                  }
+                }
+              } ~
+              path("device" / Segment / "track" / Segment) { (id, op) ⇒
+                post {
+                  op match {
+                    case "start" ⇒
+                      devices ! Commands.StartTracking(id)
+                      complete(StatusCodes.OK)
+                    case "stop" ⇒
+                      devices ! Commands.StopTracking(id)
+                      complete(StatusCodes.OK)
+                    case _ ⇒ complete(StatusCodes.NotFound)
+                  }
                 }
               }
-            } ~
+          } ~
             path("health") {
               get {
                 complete(StatusCodes.OK)
