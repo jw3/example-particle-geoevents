@@ -18,6 +18,7 @@ object Boot
     with BootUtils
     with DeviceRoutes
     with EventRoutes
+    with FenceRoutes
     with GeoDatabase
     with DataRoutes
     with LazyLogging {
@@ -47,7 +48,7 @@ object Boot
   // start top level components
 
   val devices = system.actorOf(DeviceManager.props(), "devices")
-  val fencing = system.actorOf(Fencer.props(), "fencing")
+  val fencing = system.actorOf(Fencer.props(), "fencer")
 
   //
   // start http
@@ -56,7 +57,7 @@ object Boot
   val port = config.as[Int]("geo.http.port")
 
   logger.info(s"starting http on $iface:$port")
-  val routes = deviceRoutes(devices) ~ eventRoutes() ~ dataRoutes(db)
+  val routes = deviceRoutes(devices) ~ eventRoutes() ~ dataRoutes(db) ~ fenceRoutes(fencing)
   Http().bindAndHandle(routes, iface, port)
 }
 

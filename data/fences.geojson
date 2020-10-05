@@ -1,0 +1,46 @@
+{
+  "type": "FeatureCollection",
+  "name": "public-fences",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "fid": 1,
+        "name": "fence1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -94.474662,
+              37.062267
+            ],
+            [
+              -94.474918,
+              37.056682
+            ],
+            [
+              -94.455435,
+              37.055829
+            ],
+            [
+              -94.455392,
+              37.061243
+            ],
+            [
+              -94.474662,
+              37.062267
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

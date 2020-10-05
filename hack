@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 
+# https://stackoverflow.com/a/246128
+readonly script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 readonly host="${HOST:-${HOSTNAME}}"
 readonly port="${PORT:-9000}"
 
 add() {
   curl "$host:$port/api/device/$1" -XPOST
+  echo ""
+}
+
+fence() {
+  curl "$host:$port/api/fence" -d @"$script_dir/data/fences.geojson" -H "Content-Type: application/json"
   echo ""
 }
 
@@ -16,7 +24,6 @@ health() {
 # take coords in lat lon format
 move() {
   export ID="$1"
-  export POS="$2:$3"
 
   jq -n '{pos: env.POS}' \
   | curl "$host:$port/api/device/$ID/move" -H 'content-type: application/json' -d @-

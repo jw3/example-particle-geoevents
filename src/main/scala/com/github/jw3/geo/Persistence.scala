@@ -4,12 +4,12 @@ import java.util.UUID
 
 import akka.persistence.journal.{Tagged, WriteEventAdapter}
 import akka.persistence.query.{NoOffset, Offset, TimeBasedUUID, Sequence ⇒ AkkaSequence}
-import com.github.jw3.geo.Api.Events.{PositionUpdate, TrackingEvent}
+import com.github.jw3.geo.Api.Events.{FenceContainment, PositionUpdate, TrackingEvent}
 import com.github.jw3.geo.Api.Tags
 import com.github.tminglei.slickpg.ExPostgresProfile
 import com.typesafe.config.Config
 import geotrellis.slick.PostGisSupport
-import geotrellis.vector.{Line, Point}
+import geotrellis.vector.{Line, Point, Polygon}
 
 import scala.util.Try
 
@@ -42,6 +42,16 @@ object GeoConcepts {
   object TrackTable {
     val tracks = TableQuery[TrackTable]
   }
+
+  class FenceTable(tag: Tag) extends Table[(Int, String, Polygon)](tag, "fences") {
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def name = column[String]("name")
+    def geometry = column[Polygon]("geometry")
+    def * = (id, name, geometry)
+  }
+  object FenceTable {
+    val tracks = TableQuery[FenceTable]
+  }
 }
 
 trait GeoDatabase {
@@ -63,6 +73,8 @@ class TaggingEventAdapter extends WriteEventAdapter {
       withTag(event, Tags.Movement)
     case _: TrackingEvent ⇒
       withTag(event, Tags.Tracks)
+    case _: FenceContainment ⇒
+      withTag(event, Tags.Fencing)
     case _ ⇒ event
   }
 }

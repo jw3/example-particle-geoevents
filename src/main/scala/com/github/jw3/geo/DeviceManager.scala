@@ -28,6 +28,7 @@ class DeviceManager extends PersistentActor with ActorLogging {
       log.debug(s"device manager restored via persistence")
 
     case SnapshotOffer(_, ss: DeviceManager.Snapshot) ⇒
+      // todo;; this is not firing
       log.debug("restoring {} devices", ss.devices.size)
       ss.devices.foreach(self ! Events.DeviceAdded(_))
 

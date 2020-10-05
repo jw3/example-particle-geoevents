@@ -16,4 +16,7 @@ object Streams {
 
   def tracking(offset: Offset = NoOffset)(implicit sys: ActorSystem): Source[EventEnvelope, NotUsed] =
     stream(Tags.Tracks, offset)
+
+  def fencing(offset: Offset = NoOffset)(implicit sys: ActorSystem): Source[EventEnvelope, NotUsed] =
+    stream(Tags.Fencing, offset)
 }

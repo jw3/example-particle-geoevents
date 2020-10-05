@@ -3,28 +3,26 @@ package com.github.jw3.geo
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, Props}
-import com.github.jw3.geo.Fencer.{FeatureCreated, FromGeoJson}
-import geotrellis.vector.io.json.GeoJson
-import geotrellis.vector.io.json.Implicits._
-import geotrellis.vector.{Geometry, Polygon}
+import akka.stream.Materializer
+import com.github.jw3.geo.Api.Commands.CreateFence
+import com.github.jw3.geo.Api.Events
+import com.github.jw3.geo.Api.Responses.InvalidFence
+import geotrellis.vector.Polygon
 
 object Fencer {
-  def props() = Props(new Fencer)
-
-  final case class FromGeoJson(name: String, json: String)
-  final case class FeatureCreated(name: String, fid: String)
+  def props()(implicit mat: Materializer) = Props(new Fencer)
 }
 
-class Fencer extends Actor with ActorLogging {
+class Fencer(implicit mat: Materializer) extends Actor with ActorLogging {
   def receive: Receive = {
-    case FromGeoJson(name, json) ⇒
-      val geom = GeoJson.parse[Geometry](json)
+    case CreateFence(name, g @ Polygon(_)) ⇒
       val fid = UUID.randomUUID.toString.take(8)
 
-      geom match {
-        case g @ Polygon(_) ⇒
-          context.actorOf(Feature.area(name, g), fid)
-          sender ! FeatureCreated(name, fid)
-      }
+      context.actorOf(Fence.props(name, g), fid)
+      sender ! Events.FenceCreated(fid, name, g)
+
+    case CreateFence(name, _) ⇒
+      log.warning("invalid fence geometry, only polygons are supported")
+      sender ! InvalidFence()
   }
 }
