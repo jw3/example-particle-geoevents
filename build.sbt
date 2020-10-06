@@ -50,3 +50,7 @@ libraryDependencies ++= {
     "org.scalatest" %% "scalatest" % "3.0.5" % Test
   )
 }
+
+dockerUpdateLatest := true
+dockerExposedPorts := Seq(9000)
+dockerBaseImage := "adoptopenjdk/openjdk11:debianslim-jre"
