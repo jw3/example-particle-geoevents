@@ -1,5 +1,7 @@
 package com.github.jw3.geo
 
+import java.nio.file.{Path, Paths}
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.RouteConcatenation._
@@ -54,11 +56,25 @@ object Boot
   // start http
 
   val iface = "0.0.0.0"
-  val port = config.as[Int]("geo.http.port")
-
-  logger.info(s"starting http on $iface:$port")
   val routes = deviceRoutes(devices) ~ eventRoutes() ~ dataRoutes(db) ~ fenceRoutes(fencing)
-  Http().bindAndHandle(routes, iface, port)
+
+  val httpEnabled = config.as[Boolean]("geo.http.enabled")
+  if (httpEnabled) {
+    val port = config.as[Int]("geo.http.port")
+    logger.info(s"starting http on $iface:$port")
+    Http().bindAndHandle(routes, iface, port)
+  }
+
+  httpsConfig(config) match {
+    case Some(cfg) ⇒
+      logger.debug("enabling as-server SSL using keystore@[{}]", cfg.ks)
+      val port = config.as[Int]("geo.https.port")
+      logger.info(s"starting https on $iface:$port")
+      Http().bindAndHandle(routes, iface, port, connectionContext = ssl.from(cfg.ks, cfg.pass))
+
+    case None if !httpEnabled ⇒
+      logger.warn("neither http or https were enabled")
+  }
 }
 
 trait BootUtils {
@@ -72,7 +88,21 @@ trait BootUtils {
       load("persistence-postgres-app.conf")
   }
 
+  case class HttpsConfig(ks: Path, pass: Array[Char])
+  def httpsConfig(config: Config): Option[HttpsConfig] = {
+    (
+      config.getAs[Boolean]("geo.https.enabled"),
+      config.getAs[String]("geo.https.ks.path"),
+      config.getAs[String]("geo.https.ks.pass")
+    ) match {
+      case (Some(true), Some(path), Some(pass)) ⇒
+        Some(HttpsConfig(Paths.get(path), pass.toCharArray))
+      case _ ⇒ None
+  }}
+
   def banner(cfg: Config): String = {
+    val httpEnabled = cfg.as[Boolean]("geo.http.enabled")
+    val httpsEnabled = httpsConfig(cfg).isDefined
     s"""
         |
         |       ,---.
@@ -104,6 +134,8 @@ trait BootUtils {
         |
         | postgis db:    ${cfg.as[String]("slick.db.name")}
         | postgis host:  ${cfg.as[String]("slick.db.host")}
+        | http port:     ${if (httpEnabled) cfg.as[Int]("geo.http.port") else "Disabled"}
+        | https port:    ${if (httpsEnabled) cfg.as[Int]("geo.https.port") else "Disabled"}
         |
       """.stripMargin
   }
