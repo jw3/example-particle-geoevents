@@ -19,7 +19,7 @@ object DeviceRoutes {
     implicit val format: RootJsonFormat[HookCall] = jsonFormat1(HookCall.apply)
   }
 
-  case class MoveEvent(id: String, lon: String, lat: String)
+  case class MoveEvent(id: String, x: String, y: String)
   object MoveEvent extends DefaultJsonProtocol {
     implicit val format: RootJsonFormat[MoveEvent] = jsonFormat3(MoveEvent.apply)
   }
@@ -36,7 +36,7 @@ trait DeviceRoutes {
             path("move") {
               post {
                 entity(as[DeviceRoutes.MoveEvent]) { e ⇒
-                  devices ! Commands.MoveDevice(e.id, Point(e.lon.toDouble, e.lat.toDouble))
+                  devices ! Commands.MoveDevice(e.id, Point(e.x.toDouble, e.y.toDouble))
                   complete(StatusCodes.Accepted)
                 } ~
                   extractRequest { r ⇒
