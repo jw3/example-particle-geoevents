@@ -71,8 +71,16 @@ class DeviceManager extends PersistentActor with ActorLogging {
     //
     // forwarded
     //
-    case c @ Commands.MoveDevice(id, _) ⇒
-      device(id).foreach(_ forward c)
+    case cmd @ Commands.MoveDevice(id, _) ⇒
+      device(id) match {
+        case Some(d) ⇒ d forward cmd
+        case None ⇒
+          val ref = context.actorOf(Device.props(id), id)
+          persist(Events.DeviceAdded(id)) { e ⇒
+            log.debug("device added (implicit) [{}]", ref.path.name)
+            ref forward cmd
+          }
+      }
 
     case c: TrackingCommand ⇒
       device(c.device).foreach(_ forward c)
