@@ -74,6 +74,9 @@ object Boot
 
     case None if !httpEnabled ⇒
       logger.warn("neither http or https were enabled")
+
+    case _ ⇒
+      logger.warn("https is disabled")
   }
 }
 
