@@ -31,6 +31,27 @@ move() {
   echo ""
 }
 
+hook() {
+  local device=${1:-foo}
+  local a=$(( ( RANDOM % 9 ) ))
+  local b=$(( ( RANDOM % 9 ) ))
+  local c=$(( ( RANDOM % 9 ) ))
+  echo """ hook moves $device 39.$a$b -79.$c$a """
+
+  local foo=$(cat  <<HOOK
+{
+  "id": "$device",
+  "event": "M",
+  "data": "39.$a$b:-79.$c$a",
+  "when": "99999"
+}
+HOOK
+)
+  curl "$host:$port/api/device/move" -H 'content-type: application/json' -d "$foo"
+
+  echo ""
+}
+
 track() {
   curl "$host:$port/api/device/$1/track/$2" -XPOST
   echo ""

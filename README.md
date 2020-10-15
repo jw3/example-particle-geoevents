@@ -36,13 +36,10 @@ https://github.com/jw3/geotrellis/tree/2.12.5
 
 ```
 {
-  "event":"mv",
-  "data":"34.12345:-79.09876",
-  "published_at":"2018-04-22T04:14:43.044Z",
-  "coreid":"api",
-  "userid":"1234567890",
-  "fw_version":0,
-  "public":false
+  "id": "{{{PARTICLE_DEVICE_ID}}}",
+  "event": "{{{PARTICLE_EVENT_NAME}}}",
+  "data": "{{{PARTICLE_EVENT_VALUE}}}",
+  "when": "{{{PARTICLE_PUBLISHED_AT}}}"
 }
 ```
 

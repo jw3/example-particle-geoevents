@@ -14,9 +14,9 @@ import geotrellis.vector.Point
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
 object DeviceRoutes {
-  final case class HookCall(pos: String)
+  final case class HookCall(id: String, event: String, data: String, when: String)
   object HookCall extends DefaultJsonProtocol {
-    implicit val format: RootJsonFormat[HookCall] = jsonFormat1(HookCall.apply)
+    implicit val format: RootJsonFormat[HookCall] = jsonFormat4(HookCall.apply)
   }
 
   case class MoveEvent(id: String, x: String, y: String)
@@ -39,6 +39,11 @@ trait DeviceRoutes {
                   devices ! Commands.MoveDevice(e.id, Point(e.x.toDouble, e.y.toDouble))
                   complete(StatusCodes.Accepted)
                 } ~
+                  entity(as[DeviceRoutes.HookCall]) { e ⇒
+                    val Array(x, y) = e.data.split(":")
+                    devices ! Commands.MoveDevice(e.id, Point(x.toDouble, y.toDouble))
+                    complete(StatusCodes.Accepted)
+                  } ~
                   extractRequest { r ⇒
                     complete(StatusCodes.Forbidden)
                   }
@@ -47,11 +52,11 @@ trait DeviceRoutes {
               path(Segment) { id ⇒
                 get {
                   complete {
-                    (devices ? Queries.GetDevicePosition(id)).map {
-                      _ ⇒ StatusCodes.OK
+                    (devices ? Queries.GetDevicePosition(id)).map { _ ⇒
+                      StatusCodes.OK
                     }
                   }
-                }  ~
+                } ~
                   post {
                     val res = (devices ? AddDevice(id)).map {
                       case DeviceAdded(_) ⇒ StatusCodes.Created
@@ -64,11 +69,9 @@ trait DeviceRoutes {
               path(Segment / "move") { id ⇒
                 post {
                   entity(as[DeviceRoutes.HookCall]) { e ⇒
-                    extractRequest { r ⇒
-                      val Array(lat, lon) = e.pos.split(":")
-                      devices ! Commands.MoveDevice(id, Point(lon.toDouble, lat.toDouble))
-                      complete(StatusCodes.Accepted)
-                    }
+                    val Array(x, y) = e.data.split(":")
+                    devices ! Commands.MoveDevice(id, Point(x.toDouble, y.toDouble))
+                    complete(StatusCodes.Accepted)
                   }
                 }
               } ~
