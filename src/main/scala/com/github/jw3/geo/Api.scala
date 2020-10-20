@@ -30,7 +30,9 @@ object Api {
 
     case class TrackCancelled(id: String, beginPt: Point, endPt: Point) extends Event with TrackingEvent
 
-    case class PositionUpdate(device: String, pos: Point, time: Long) extends Event
+    case class PositionUpdate(device: String, pos: Point, time: Long) extends Event {
+      def asTxtMsg() = s"$device:${pos.x}:${pos.y}"
+    }
     object PositionUpdate {
       implicit val format: RootJsonFormat[PositionUpdate] = jsonFormat3(PositionUpdate.apply)
     }

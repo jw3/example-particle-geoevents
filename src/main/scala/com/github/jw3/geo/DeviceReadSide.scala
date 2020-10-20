@@ -6,13 +6,13 @@ import akka.persistence.{PersistentActor, RecoveryCompleted}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.github.jw3.geo.Api.Events.PositionUpdate
-import com.github.jw3.geo.DeviceReadSide.{DeviceMetadata, OffsetPositionUpdate, StreamPlease}
+import com.github.jw3.geo.DeviceReadSide.{DeviceMetadata, OffsetPositionUpdate, RequestStreamTo}
 import geotrellis.vector.Point
 
 object DeviceReadSide {
-  def props()(implicit mat: ActorMaterializer) = Props(new DeviceReadSide)
+  def props()(implicit mat: ActorMaterializer): Props = Props(new DeviceReadSide)
 
-  case class StreamPlease(sink: ActorRef)
+  case class RequestStreamTo(sink: ActorRef)
   case class DeviceMetadata(where: Point, when: Long)
   case class OffsetPositionUpdate(offset: Offset, what: String, where: Point, when: Long)
 }
@@ -30,7 +30,7 @@ class DeviceReadSide(implicit mat: ActorMaterializer) extends PersistentActor wi
         metadata += persistenceId → DeviceMetadata(ee.where, ee.when)
         moveOffset = offset
       }
-    case StreamPlease(sink) ⇒
+    case RequestStreamTo(sink) ⇒
       Source
         .fromIterator(() ⇒ metadata.map(m ⇒ PositionUpdate(m._1, m._2.where, m._2.when)).iterator)
         .concat(Streams.movement(moveOffset).collect {

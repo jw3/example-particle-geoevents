@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import com.github.jw3.geo.Api.Events.PositionUpdate
-import com.github.jw3.geo.DeviceReadSide.StreamPlease
+import com.github.jw3.geo.DeviceReadSide.RequestStreamTo
 
 object EventRoutes {}
 
@@ -23,11 +23,8 @@ trait EventRoutes {
                 complete {
                   val source = Source
                     .actorRef[PositionUpdate](bufferSize = 10, overflowStrategy = OverflowStrategy.dropHead)
-                    .map(pu ⇒ s"${pu.device}:${pu.pos.x}:${pu.pos.y}")
-                    .map(TextMessage(_))
-                    .mapMaterializedValue(ref ⇒
-                      deviceReadSide ! StreamPlease(ref)
-                    )
+                    .map(pu ⇒ TextMessage(pu.asTxtMsg()))
+                    .mapMaterializedValue(ref ⇒ deviceReadSide ! RequestStreamTo(ref))
                   upgrade.handleMessages(Flow.fromSinkAndSource(Sink.ignore, source))
                 }
               }
