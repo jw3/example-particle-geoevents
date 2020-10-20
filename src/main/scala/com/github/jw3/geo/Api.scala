@@ -30,9 +30,9 @@ object Api {
 
     case class TrackCancelled(id: String, beginPt: Point, endPt: Point) extends Event with TrackingEvent
 
-    case class PositionUpdate(device: String, pos: Point) extends Event
+    case class PositionUpdate(device: String, pos: Point, time: Long) extends Event
     object PositionUpdate {
-      implicit val format: RootJsonFormat[PositionUpdate] = jsonFormat2(PositionUpdate.apply)
+      implicit val format: RootJsonFormat[PositionUpdate] = jsonFormat3(PositionUpdate.apply)
     }
 
     case class FencingChange(id: String, device: String, state: String)

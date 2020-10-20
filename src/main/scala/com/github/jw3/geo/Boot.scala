@@ -45,6 +45,7 @@ object Boot
   }
 
   val journaler = system.actorOf(Journaler.props(db), "journal")
+  val deviceReadSide = system.actorOf(DeviceReadSide.props(), "device-read-side")
 
   //
   // start top level components
@@ -56,7 +57,7 @@ object Boot
   // start http
 
   val iface = "0.0.0.0"
-  val routes = deviceRoutes(devices) ~ eventRoutes() ~ dataRoutes(db) ~ fenceRoutes(fencing)
+  val routes = deviceRoutes(devices) ~ eventRoutes(deviceReadSide) ~ dataRoutes(db) ~ fenceRoutes(fencing)
 
   val httpEnabled = config.as[Boolean]("geo.http.enabled")
   if (httpEnabled) {

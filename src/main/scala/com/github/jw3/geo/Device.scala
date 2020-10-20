@@ -1,5 +1,6 @@
 package com.github.jw3.geo
 
+import java.time.Instant
 import java.util.UUID
 
 import akka.actor.{ActorLogging, Props}
@@ -33,7 +34,7 @@ class Device(id: String) extends PersistentActor with ActorLogging {
       position = ss.position
       tracking = ss.track
 
-    case Events.PositionUpdate(_, pos) ⇒
+    case Events.PositionUpdate(_, pos, t) ⇒
       log.debug("replayed device move {}", pos)
       position = Some(pos)
 
@@ -51,7 +52,7 @@ class Device(id: String) extends PersistentActor with ActorLogging {
     // commands
     //
     case Commands.MoveDevice(_, g) ⇒
-      persist(Events.PositionUpdate(id, g)) { e ⇒
+      persist(Events.PositionUpdate(id, g, Instant.now().getEpochSecond)) { e ⇒
         position = Some(e.pos)
       }
 
@@ -79,7 +80,7 @@ class Device(id: String) extends PersistentActor with ActorLogging {
     //
     // events
     //
-    case e @ Events.PositionUpdate(`id`, _) ⇒
+    case e @ Events.PositionUpdate(`id`, _, _) ⇒
       position = Some(e.pos)
 
     //
