@@ -32,8 +32,8 @@ class Journaler(db: Database)(implicit mat: ActorMaterializer) extends Actor wit
   db.run(OffsetStore.getOffsetQuery(Journaler.Id, Tags.Movement)).flatMap { start ⇒
     // moves to child actor, MoveJournaler
     Streams.movement(start).runForeach {
-      case EventEnvelope(offset, _, _, PositionUpdate(dev, pos)) ⇒
-        val action = (events += ((0, dev, pos))).flatMap { _ ⇒
+      case EventEnvelope(offset, _, _, PositionUpdate(dev, pos, when)) ⇒
+        val action = (events += ((0, dev, pos, when))).flatMap { _ ⇒
           updateOffsetQuery(Journaler.Id, Tags.Movement, offset)
         }
         db.run(action.transactionally).onComplete(_ ⇒ context.self ! Journaler.MovePersisted(dev, pos))

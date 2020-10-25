@@ -1,8 +1,10 @@
 package com.github.jw3.geo
 
+import java.time.{LocalDateTime, ZoneOffset}
+
 import geotrellis.vector.io.json.Implicits._
 import geotrellis.vector.{Geometry, Point, Polygon}
-import spray.json.{DefaultJsonProtocol, RootJsonFormat}
+import spray.json._
 
 object Api {
   sealed trait Command
@@ -30,8 +32,8 @@ object Api {
 
     case class TrackCancelled(id: String, beginPt: Point, endPt: Point) extends Event with TrackingEvent
 
-    case class PositionUpdate(device: String, pos: Point, time: Long) extends Event {
-      def asTxtMsg() = s"$device:${pos.x}:${pos.y}"
+    case class PositionUpdate(device: String, pos: Point, when: LocalDateTime) extends Event {
+      def asTxtMsg() = s"$device:${pos.x}:${pos.y}:${when.seconds}"
     }
     object PositionUpdate {
       implicit val format: RootJsonFormat[PositionUpdate] = jsonFormat3(PositionUpdate.apply)
@@ -92,5 +94,18 @@ object Api {
     val Movement = "movement"
     val Tracks = "tracks"
     val Fencing = "fencing"
+  }
+
+  private implicit val localDateTimeFormat: RootJsonFormat[LocalDateTime] = new RootJsonFormat[LocalDateTime] {
+    def read(json: JsValue): LocalDateTime = json match {
+      case JsNumber(v) ⇒ LocalDateTime.ofEpochSecond(v.toIntExact, 0, ZoneOffset.UTC)
+      case v ⇒ deserializationError(s"expected JsNumber, got $v")
+    }
+
+    def write(dt: LocalDateTime): JsValue = JsNumber(dt.getSecond)
+  }
+
+  implicit class RichLocalDateTime(dt: LocalDateTime) {
+    def seconds: Long = dt.toEpochSecond(ZoneOffset.UTC)
   }
 }

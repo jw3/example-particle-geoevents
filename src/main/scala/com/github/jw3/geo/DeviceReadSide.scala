@@ -1,5 +1,7 @@
 package com.github.jw3.geo
 
+import java.time.LocalDateTime
+
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.persistence.query.{EventEnvelope, Offset}
 import akka.persistence.{PersistentActor, RecoveryCompleted}
@@ -13,8 +15,8 @@ object DeviceReadSide {
   def props()(implicit mat: ActorMaterializer): Props = Props(new DeviceReadSide)
 
   case class RequestStreamTo(sink: ActorRef)
-  case class DeviceMetadata(where: Point, when: Long)
-  case class OffsetPositionUpdate(offset: Offset, what: String, where: Point, when: Long)
+  case class DeviceMetadata(where: Point, when: LocalDateTime)
+  case class OffsetPositionUpdate(offset: Offset, what: String, where: Point, when: LocalDateTime)
 }
 
 class DeviceReadSide(implicit mat: ActorMaterializer) extends PersistentActor with ActorLogging {
@@ -26,7 +28,7 @@ class DeviceReadSide(implicit mat: ActorMaterializer) extends PersistentActor wi
 
   def receiveCommand: Receive = {
     case EventEnvelope(offset, _, _, e @ PositionUpdate(_, _, _)) ⇒
-      persist(OffsetPositionUpdate(offset, e.device, e.pos, e.time)) { ee ⇒
+      persist(OffsetPositionUpdate(offset, e.device, e.pos, e.when)) { ee ⇒
         metadata += persistenceId → DeviceMetadata(ee.where, ee.when)
         moveOffset = offset
       }

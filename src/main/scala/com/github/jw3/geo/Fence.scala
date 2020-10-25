@@ -23,7 +23,7 @@ class Fence(name: String, geom: Polygon)(implicit mat: Materializer) extends Act
 
   // todo;; persist offset
   Streams.movement().runForeach {
-    case EventEnvelope(_, _, _, PositionUpdate(dev, pos)) ⇒
+    case EventEnvelope(_, _, _, PositionUpdate(dev, pos, time)) ⇒
       val in = geom.contains(pos)
       if (in)
         self ! Inside(dev)

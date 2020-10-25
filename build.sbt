@@ -39,8 +39,9 @@ libraryDependencies ++= {
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     // persistence
-    "com.typesafe.slick" %% "slick" % "3.1.0",
+    "com.typesafe.slick" %% "slick" % "3.2.0",
     "org.postgresql" % "postgresql" % "42.2.2",
+    "com.github.tminglei" %% "slick-pg" % "0.19.3",
     "com.github.dnvriend" %% "akka-persistence-jdbc" % "3.3.0",
     "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.5.1.1",
     // test

@@ -1,6 +1,6 @@
 package com.github.jw3.geo
 
-import java.time.Instant
+import java.time.{LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import akka.actor.{ActorLogging, Props}
@@ -52,7 +52,7 @@ class Device(id: String) extends PersistentActor with ActorLogging {
     // commands
     //
     case Commands.MoveDevice(_, g) ⇒
-      persist(Events.PositionUpdate(id, g, Instant.now().getEpochSecond)) { e ⇒
+      persist(Events.PositionUpdate(id, g, LocalDateTime.now(ZoneOffset.UTC))) { e ⇒
         position = Some(e.pos)
       }
 

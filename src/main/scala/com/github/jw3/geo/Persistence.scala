@@ -1,5 +1,6 @@
 package com.github.jw3.geo
 
+import java.time.LocalDateTime
 import java.util.UUID
 
 import akka.persistence.journal.{Tagged, WriteEventAdapter}
@@ -22,11 +23,13 @@ object PgDriver extends PgDriver
 object GeoConcepts {
   import com.github.jw3.geo.PgDriver.api._
 
-  class EventTable(tag: Tag) extends Table[(Int, String, Point)](tag, "positions") {
+  class EventTable(tag: Tag) extends Table[(Int, String, Point, LocalDateTime)](tag, "positions") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def device = column[String]("device")
     def geometry = column[Point]("geometry")
-    def * = (id, device, geometry)
+    def eventtime = column[LocalDateTime]("eventtime")
+
+    def * = (id, device, geometry, eventtime)
   }
   object EventTable {
     val events = TableQuery[EventTable]
