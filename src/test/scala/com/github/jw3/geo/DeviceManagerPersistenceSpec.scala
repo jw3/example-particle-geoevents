@@ -37,7 +37,7 @@ class DeviceManagerPersistenceSpec extends TestKit(ActorSystem()) with WordSpecL
 
       {
         val mgr = mockServiceQuietly(pid)
-        mgr ! Commands.AddDevice(dev)
+        mgr ! Commands.AddDevice(dev, None)
         expectMsg(Events.DeviceAdded(dev))
         kill(mgr)
       }

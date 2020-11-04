@@ -11,7 +11,7 @@ import com.github.jw3.geo.Api.Events.DeviceAdded
 import com.github.jw3.geo.Api.Responses.DeviceExists
 import com.github.jw3.geo.Api.{Commands, Queries}
 import geotrellis.vector.Point
-import spray.json.{DefaultJsonProtocol, RootJsonFormat}
+import spray.json._
 
 object DeviceRoutes {
   final case class HookCall(id: String, event: String, data: String, when: String)
@@ -23,6 +23,17 @@ object DeviceRoutes {
   object MoveEvent extends DefaultJsonProtocol {
     implicit val format: RootJsonFormat[MoveEvent] = jsonFormat3(MoveEvent.apply)
   }
+
+  case class ReadyEvent(id: String, version: String)
+  object ReadyEvent extends DefaultJsonProtocol {
+    implicit val format: RootJsonFormat[ReadyEvent] = jsonFormat2(ReadyEvent.apply)
+  }
+
+  case class PingEvent(id: String)
+  object PingEvent extends DefaultJsonProtocol {
+    implicit val format: RootJsonFormat[PingEvent] = jsonFormat1(PingEvent.apply)
+  }
+
 }
 
 trait DeviceRoutes {
@@ -33,6 +44,22 @@ trait DeviceRoutes {
       extractExecutionContext { implicit ec ⇒
         pathPrefix("api") {
           pathPrefix("device") {
+            path("ready") {
+              post {
+                entity(as[DeviceRoutes.ReadyEvent]) { e ⇒
+                  devices ! Commands.AddDevice(e.id, Some(e.version))
+                  complete(StatusCodes.OK)
+                }
+              }
+            } ~
+            path("ping") {
+              post {
+                entity(as[DeviceRoutes.PingEvent]) { e ⇒
+                  devices ! Commands.HeartBeat(e.id)
+                  complete(StatusCodes.OK)
+                }
+              }
+            } ~
             path("move") {
               post {
                 entity(as[DeviceRoutes.MoveEvent]) { e ⇒
@@ -58,7 +85,7 @@ trait DeviceRoutes {
                   }
                 } ~
                   post {
-                    val res = (devices ? AddDevice(id)).map {
+                    val res = (devices ? AddDevice(id, None)).map {
                       case DeviceAdded(_) ⇒ StatusCodes.Created
                       case DeviceExists(_) ⇒ StatusCodes.OK
                       case _ ⇒ StatusCodes.InternalServerError

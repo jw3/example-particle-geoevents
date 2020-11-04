@@ -33,7 +33,7 @@ class DeviceManager extends PersistentActor with ActorLogging {
       ss.devices.foreach(self ! Events.DeviceAdded(_))
 
     case Events.DeviceAdded(id) ⇒
-      log.debug(s"added event for $id")
+      log.info(s"added event for $id")
       self ! Events.DeviceAdded(id)
   }
 
@@ -41,7 +41,7 @@ class DeviceManager extends PersistentActor with ActorLogging {
     //
     // commands
     //
-    case Commands.AddDevice(id) ⇒
+    case Commands.AddDevice(id, _) ⇒
       val replyto = sender()
       device(id) match {
         case Some(_) ⇒ replyto ! Responses.DeviceExists(id)
@@ -49,7 +49,7 @@ class DeviceManager extends PersistentActor with ActorLogging {
           val ref = context.actorOf(Device.props(id), id)
           persist(Events.DeviceAdded(id)) { e ⇒
             replyto ! e
-            log.debug("device added [{}]", ref.path.name)
+            log.info("device added [{}]", ref.path.name)
           }
       }
 
@@ -77,7 +77,18 @@ class DeviceManager extends PersistentActor with ActorLogging {
         case None ⇒
           val ref = context.actorOf(Device.props(id), id)
           persist(Events.DeviceAdded(id)) { e ⇒
-            log.debug("device added (implicit) [{}]", ref.path.name)
+            log.info("device added (implicit move) [{}]", ref.path.name)
+            ref forward cmd
+          }
+      }
+
+    case cmd @ Commands.HeartBeat(id) ⇒
+      device(id) match {
+        case Some(d) ⇒ d forward cmd
+        case None ⇒
+          val ref = context.actorOf(Device.props(id), id)
+          persist(Events.DeviceAdded(id)) { e ⇒
+            log.info("device added (implicit heartbeat) [{}]", ref.path.name)
             ref forward cmd
           }
       }

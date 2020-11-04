@@ -61,7 +61,8 @@ object Api {
   }
 
   object Commands extends DefaultJsonProtocol {
-    case class AddDevice(id: String) extends Command
+    case class AddDevice(id: String, version: Option[String]) extends Command
+    case class HeartBeat(id: String)
     case class MoveDevice(device: String, geom: Point) extends Command
 
     sealed trait TrackingCommand {
