@@ -36,8 +36,8 @@ class DeviceReadSide(implicit mat: ActorMaterializer) extends PersistentActor wi
       Source
         .fromIterator(() ⇒ metadata.map(m ⇒ PositionUpdate(m._1, m._2.where, m._2.when)).iterator)
         .concat(Streams.movement(moveOffset).collect {
-          case EventEnvelope(_, persistenceId, _, PositionUpdate(_, pos, t)) ⇒
-            PositionUpdate(persistenceId, pos, t)
+          case EventEnvelope(_, id, _, PositionUpdate(_, pos, t)) ⇒
+            PositionUpdate(id, pos, t)
         })
         .runWith(Sink.actorRef(sink, akka.Done))
   }
