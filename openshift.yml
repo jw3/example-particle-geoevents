@@ -183,6 +183,8 @@ objects:
 - apiVersion: v1
   kind: Route
   metadata:
+    annotations:
+      haproxy.router.openshift.io/disable_cookies: 'true'
     labels:
       app: ${NAME}
     name: ${NAME}
