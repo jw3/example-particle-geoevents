@@ -14,26 +14,40 @@ import geotrellis.vector.Point
 import spray.json._
 
 object DeviceRoutes {
+  sealed trait IncomingEvent
+
   final case class HookCall(id: String, event: String, data: String, when: String)
   object HookCall extends DefaultJsonProtocol {
     implicit val format: RootJsonFormat[HookCall] = jsonFormat4(HookCall.apply)
   }
 
-  case class MoveEvent(id: String, x: String, y: String)
+  case class DeprecatedMoveEvent(id: String, x: String, y: String) extends IncomingEvent
+  object DeprecatedMoveEvent extends DefaultJsonProtocol {
+    implicit val format: RootJsonFormat[DeprecatedMoveEvent] = jsonFormat3(DeprecatedMoveEvent.apply)
+  }
+
+  case class MoveEvent(id: String, x: Double, y: Double) extends IncomingEvent
   object MoveEvent extends DefaultJsonProtocol {
     implicit val format: RootJsonFormat[MoveEvent] = jsonFormat3(MoveEvent.apply)
   }
 
-  case class ReadyEvent(id: String, version: String)
+  case class ReadyEvent(id: String, version: String) extends IncomingEvent
   object ReadyEvent extends DefaultJsonProtocol {
     implicit val format: RootJsonFormat[ReadyEvent] = jsonFormat2(ReadyEvent.apply)
   }
 
-  case class PingEvent(id: String)
+  case class PingEvent(id: String) extends IncomingEvent
   object PingEvent extends DefaultJsonProtocol {
     implicit val format: RootJsonFormat[PingEvent] = jsonFormat1(PingEvent.apply)
   }
 
+  case class DisconnectEvent(id: String) extends IncomingEvent
+  object DisconnectEvent extends DefaultJsonProtocol {
+    implicit val format: RootJsonFormat[DisconnectEvent] = jsonFormat1(DisconnectEvent.apply)
+  }
+
+  case class MalformedEvent(payload: String) extends IncomingEvent
+  case class UnsupportedEvent(payload: String) extends IncomingEvent
 }
 
 trait DeviceRoutes {
@@ -62,10 +76,14 @@ trait DeviceRoutes {
             } ~
             path("move") {
               post {
-                entity(as[DeviceRoutes.MoveEvent]) { e ⇒
+                entity(as[DeviceRoutes.DeprecatedMoveEvent]) { e ⇒
                   devices ! Commands.MoveDevice(e.id, Point(e.x.toDouble, e.y.toDouble))
                   complete(StatusCodes.Accepted)
                 } ~
+                  entity(as[DeviceRoutes.MoveEvent]) { e ⇒
+                    devices ! Commands.MoveDevice(e.id, Point(e.x, e.y))
+                    complete(StatusCodes.Accepted)
+                  } ~
                   entity(as[DeviceRoutes.HookCall]) { e ⇒
                     val Array(x, y) = e.data.split(":")
                     devices ! Commands.MoveDevice(e.id, Point(x.toDouble, y.toDouble))

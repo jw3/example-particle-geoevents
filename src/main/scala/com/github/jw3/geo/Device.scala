@@ -54,6 +54,7 @@ class Device(id: String) extends PersistentActor with ActorLogging {
     case Commands.MoveDevice(_, g) ⇒
       persist(Events.PositionUpdate(id, g, LocalDateTime.now(ZoneOffset.UTC))) { e ⇒
         position = Some(e.pos)
+        log.debug("{} moved {}, {}", e.device, e.pos.x, e.pos.y)
       }
 
     case Commands.StartTracking(`id`) if tracking.isEmpty ⇒

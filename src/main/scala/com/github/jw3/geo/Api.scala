@@ -62,8 +62,10 @@ object Api {
 
   object Commands extends DefaultJsonProtocol {
     case class AddDevice(id: String, version: Option[String]) extends Command
-    case class HeartBeat(id: String)
+    case class Disconnected(device: String) extends Command
     case class MoveDevice(device: String, geom: Point) extends Command
+    case class HeartBeat(id: String)
+    case object Nop extends Command
 
     sealed trait TrackingCommand {
       def device: String
@@ -82,6 +84,8 @@ object Api {
     case class DeviceExists(id: String) extends Response[Commands.AddDevice]
     case class UnknownDevicePosition(id: String) extends Response[Queries.GetDevicePosition]
     case class DevicePosition(id: String, geom: Point) extends Response[Queries.GetDevicePosition]
+    case class DeviceRemoved(id: String) extends Response[Commands.Disconnected]
+    case class DeviceNotConnected(id: String)
 
     case class InvalidFence()
   }

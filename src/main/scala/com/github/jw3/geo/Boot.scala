@@ -1,11 +1,13 @@
 package com.github.jw3.geo
 
-import java.nio.file.{Path, Paths}
+import akka.Done
 
+import java.nio.file.{Path, Paths}
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.RouteConcatenation._
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Sink
 import akka.util.Timeout
 import com.github.jw3.BuildInfo
 import com.typesafe.config.{Config, ConfigFactory}
@@ -52,6 +54,11 @@ object Boot
 
   val devices = system.actorOf(DeviceManager.props(), "devices")
   val fencing = system.actorOf(Fencer.props(), "fencer")
+
+  //
+  // start MQTT
+
+  Mqtt.start(config).runWith(Sink.actorRef(devices, Done))
 
   //
   // start http
@@ -107,6 +114,7 @@ trait BootUtils {
   def banner(cfg: Config): String = {
     val httpEnabled = cfg.as[Boolean]("geo.http.enabled")
     val httpsEnabled = httpsConfig(cfg).isDefined
+    val mqttEnabled = cfg.as[Boolean]("mqtt.enabled")
     s"""
         |
         |       ,---.
@@ -140,6 +148,8 @@ trait BootUtils {
         | postgis host:  ${cfg.as[String]("slick.db.host")}
         | http port:     ${if (httpEnabled) cfg.as[Int]("geo.http.port") else "Disabled"}
         | https port:    ${if (httpsEnabled) cfg.as[Int]("geo.https.port") else "Disabled"}
+        | mqtt port:     ${if (mqttEnabled) cfg.as[Int]("mqtt.port") else "Disabled"}
+        | mqtt auth:     ${if (cfg.hasPath("mqtt.user") && cfg.hasPath("mqtt.pass")) cfg.as[String]("mqtt.user") else "Disabled"}
         |
       """.stripMargin
   }

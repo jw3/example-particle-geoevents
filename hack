@@ -24,9 +24,11 @@ health() {
 # take coords in lat lon format
 move() {
   export ID="$1"
+  export X="$2"
+  export Y="$3"
 
-  jq -n '{pos: env.POS}' \
-  | curl "$host:$port/api/device/$ID/move" -H 'content-type: application/json' -d @-
+  jq -n '{id: env.ID, x: env.X, y: env.Y}' \
+  | curl "$host:$port/api/device/move" -H 'content-type: application/json' -d @-
 
   echo ""
 }

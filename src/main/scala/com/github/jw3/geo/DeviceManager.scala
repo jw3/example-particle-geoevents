@@ -1,6 +1,6 @@
 package com.github.jw3.geo
 
-import akka.actor.{ActorContext, ActorLogging, ActorRef, Props}
+import akka.actor.{ActorContext, ActorLogging, ActorRef, PoisonPill, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted, SnapshotOffer}
 import com.github.jw3.geo.Api.Commands.TrackingCommand
 import com.github.jw3.geo.Api.{Commands, Events, Queries, Responses}
@@ -53,13 +53,22 @@ class DeviceManager extends PersistentActor with ActorLogging {
           }
       }
 
+    case Commands.Disconnected(id) ⇒
+      device(id) match {
+        case None ⇒ sender ! Responses.DeviceNotConnected(id)
+        case Some(ref) ⇒
+          log.info("device disconnecting {}", id)
+          ref ! PoisonPill
+          sender ! Responses.DeviceRemoved(id)
+      }
+
     //
     // queries
     //
-    case DeviceManager.QueryDeviceStatus(id) ⇒
+    case q @ DeviceManager.QueryDeviceStatus(id) ⇒
       device(id) match {
-        case None ⇒ sender ! DeviceManager.DeviceStatusUnknown
         case Some(_) ⇒ sender ! DeviceManager.DeviceOnline
+        case None ⇒ sender ! DeviceManager.DeviceStatusUnknown
       }
 
     case q @ Queries.GetDevicePosition(id) ⇒
