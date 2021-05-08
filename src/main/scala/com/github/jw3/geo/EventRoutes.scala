@@ -15,19 +15,15 @@ trait EventRoutes {
 
   def eventRoutes(deviceReadSide: ActorRef): Route =
     pathPrefix("api") {
-      extractActorSystem { implicit system ⇒
-        path("watch" / "device") {
-          get {
-            extractMaterializer { implicit mat ⇒
-              extractUpgradeToWebSocket { upgrade ⇒
-                complete {
-                  val source = Source
-                    .actorRef[PositionUpdate](bufferSize = 10, overflowStrategy = OverflowStrategy.dropHead)
-                    .map(pu ⇒ TextMessage(pu.asTxtMsg()))
-                    .mapMaterializedValue(ref ⇒ deviceReadSide ! RequestStreamTo(ref))
-                  upgrade.handleMessages(Flow.fromSinkAndSource(Sink.ignore, source))
-                }
-              }
+      path("watch" / "device") {
+        get {
+          extractUpgradeToWebSocket { upgrade ⇒
+            complete {
+              val source = Source
+                .actorRef[PositionUpdate](bufferSize = 10, overflowStrategy = OverflowStrategy.dropHead)
+                .map(pu ⇒ TextMessage(pu.asTxtMsg()))
+                .mapMaterializedValue(ref ⇒ deviceReadSide ! RequestStreamTo(ref))
+              upgrade.handleMessages(Flow.fromSinkAndSource(Sink.ignore, source))
             }
           }
         }

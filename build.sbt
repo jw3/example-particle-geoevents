@@ -2,7 +2,7 @@ enablePlugins(GitVersioning, BuildInfoPlugin, JavaServerAppPackaging, DockerPlug
 
 name := "example-particle-geoserver"
 organization := "com.github.jw3"
-scalaVersion := "2.12.5"
+scalaVersion := "2.12.13"
 git.useGitDescribe := true
 
 buildInfoPackage := organization.value
